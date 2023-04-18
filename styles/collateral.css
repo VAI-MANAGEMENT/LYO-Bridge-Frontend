@@ -1,0 +1,25 @@
+.collateral-card {
+  background: linear-gradient(155.44deg, #3E3E3E 0%, #1A1A1A 100%);
+  box-shadow: 1px 1px 3px #1C1C1E, inset 2px 2px 1px #868686;
+  padding: 30px;
+  border-radius: 20px;
+}
+
+.collateral-card .paragraph {
+  min-height: 180px;
+}
+
+.collateral-modal table td,
+.collateral-modal table th {
+  text-align: center;
+  vertical-align: middle;
+}
+.collateral-modal table td {
+  color: #212529;
+}
+
+.collateral-modal span {
+  font-size: 16px;
+  color: #212529;
+}
+

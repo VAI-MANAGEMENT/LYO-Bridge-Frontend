@@ -1,0 +1,72 @@
+.light-theme .mainContainer{
+  background: #fff !important;
+}
+
+.light-theme .main-header .bg-light{
+    background: rgb(155 134 199) !important;
+}
+.light-theme .nav-tabs, .light-theme .card-container , .light-theme .launchpad-item, .light-theme .searchwrp , .light-theme input{
+    background: #fff ;
+    color: #484747;
+    
+}
+
+.light-theme .nav-tabs {
+    border-bottom: 1px solid #e0dce7 !important;
+}
+
+.light-theme .hero-sec{
+    background-color: #fff !important;
+}
+
+.light-theme .nav-tabs .nav-link{
+    border: none !important;
+}
+.light-theme .card-container, .light-theme .launchpad-item, .light-theme .searchwrp{
+  
+box-shadow:-1px 2px 9px 5px rgb(237 232 237);
+}
+
+
+.light-theme .feature-wrp{
+
+    background: linear-gradient(155.44deg, #fcfaff 0%, #f3efff 100%) !important;
+    box-shadow: 1px 1px 3px #a796ce, inset 2px 2px 1px #d3c5f3 !important;
+}
+
+
+.light-theme .input-wrp, .light-theme .input-wrp input{
+    background: #edecef;
+    color: #484747;
+}
+
+.light-theme h1, .light-theme h2, .light-theme h3, .light-theme h4, .light-theme h5, .light-theme .tab-content, .light-theme table td, .light-theme table th, .light-theme p{
+    color: #484747 !important;
+}
+
+.light-theme .text-light{
+    color: #484747 !important;
+}
+
+.light-theme .btn {
+    /* background: #af97bb; */
+}
+
+.light-theme .main-header .btn{
+    background: #18C687;
+}
+
+.light-theme .searchwrp ::placeholder{
+    color: #484747 !important;
+}
+
+.light-theme .form-select {   
+ 
+    background-color: unset;
+    border: 1px solid #ced4da;
+    color: #212529;
+}
+
+.light-theme .launch-inner, .light-theme  .launch-inner p, .light-theme .launch-inner .info-wrp .num, .light-theme .launch-inner .terms-info{
+    color: #212529;
+}

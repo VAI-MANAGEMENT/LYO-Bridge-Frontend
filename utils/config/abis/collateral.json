@@ -1,0 +1,163 @@
+[
+  {
+    "inputs": [
+      { "internalType": "contract IERC20", "name": "_clfi", "type": "address" },
+      { "internalType": "contract IERC20", "name": "_lfi", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "CLFI",
+    "outputs": [{ "internalType": "contract IERC20", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "LFI",
+    "outputs": [{ "internalType": "contract IERC20", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_softwareLicence", "type": "string" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "internalType": "uint256", "name": "_timeFrame", "type": "uint256" }
+    ],
+    "name": "Stake",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_softwareLicence", "type": "string" },
+      { "internalType": "uint256", "name": "_rate", "type": "uint256" },
+      { "internalType": "uint256", "name": "_period", "type": "uint256" }
+    ],
+    "name": "addSoftware",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_softwareLicence", "type": "string" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "buySoftware",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "string", "name": "_softwareLicence", "type": "string" }],
+    "name": "claim",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getBlocknumber",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "string", "name": "_softwareLicence", "type": "string" }],
+    "name": "getRateSoftware",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "", "type": "string" },
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "name": "licenceOwnership",
+    "outputs": [
+      { "internalType": "string", "name": "softwareLicence", "type": "string" },
+      { "internalType": "uint256", "name": "purchaseTime", "type": "uint256" },
+      { "internalType": "uint256", "name": "expiryTime", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "string", "name": "", "type": "string" }],
+    "name": "licenseRecord",
+    "outputs": [
+      { "internalType": "uint256", "name": "clfiRate", "type": "uint256" },
+      { "internalType": "uint256", "name": "expiryPeriod", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "", "type": "string" },
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "name": "stakeHistory",
+    "outputs": [
+      { "internalType": "string", "name": "swLicence", "type": "string" },
+      { "internalType": "uint256", "name": "stakeAmount", "type": "uint256" },
+      { "internalType": "uint256", "name": "timeFrame", "type": "uint256" },
+      { "internalType": "uint256", "name": "lockTime", "type": "uint256" },
+      { "internalType": "uint256", "name": "lockEndTime", "type": "uint256" },
+      { "internalType": "uint256", "name": "lastUpdatedBlock", "type": "uint256" },
+      { "internalType": "uint256", "name": "claimedAmount", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_softwareLicence", "type": "string" },
+      { "internalType": "address", "name": "_account", "type": "address" }
+    ],
+    "name": "viewSoftwareBuy",
+    "outputs": [{ "internalType": "bool", "name": "flag", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_softwareLicence", "type": "string" },
+      { "internalType": "address", "name": "_account", "type": "address" }
+    ],
+    "name": "viewStake",
+    "outputs": [{ "internalType": "bool", "name": "flag", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_softwareLicence", "type": "string" },
+      { "internalType": "address", "name": "_account", "type": "address" }
+    ],
+    "name": "viewclaim",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
