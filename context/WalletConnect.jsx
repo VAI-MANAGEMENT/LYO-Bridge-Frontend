@@ -183,7 +183,7 @@ export const WalletProvider = ({ children }) => {
     console.log("changing the network to testnest", chainId);
     const currentChainId = chainId;
 
-    if (currentChainId !== process.env.chain_id) {
+    if (currentChainId !== process.env.chain_id && Web3.givenProvider) {
       await web3.currentProvider.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: Web3.utils.toHex(process.env.chain_id) }],

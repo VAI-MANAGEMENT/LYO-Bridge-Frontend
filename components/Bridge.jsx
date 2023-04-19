@@ -33,7 +33,7 @@ function BridgeComponent() {
       name: "LYO",
       symbol: "LYO",
       imageUrl: logoSmall,
-      childTokenAddress: process.env.BRIDGE_LFI_ADDRESS,
+      childTokenAddress: process.env.BRIDGE_MAIN_TOKEN_ADDRESS,
     },
   ];
 
@@ -75,8 +75,7 @@ function BridgeComponent() {
 
   useEffect(() => {
     if (networkFrom && chainId) {
-      getTokenContract();
-      console.log("BRIDGE_LFI_ADDRESS", tokenAddressFrom);
+      getTokenContract();    
     }
   }, [tokenAddressFrom, walletAddress, chainId, tokenAddressTo]);
 
@@ -359,6 +358,8 @@ function BridgeComponent() {
 
             let approveTxHash = result.transactionHash;
 
+            console.log(networkTo.chainID,)
+            console.log("lock input",  networkTo.chainID,amountFormatted.toString(),approveTxHash);
             let lock = await contractBridge.methods
               .lockTokens(
                 networkTo.chainID,
@@ -377,7 +378,7 @@ function BridgeComponent() {
                 getTxStatus(lockTxHash);
                 setBridgeLoader(false);
                 setAmount(0);
-              }, 15000);
+              }, 10000);
             }
 
             getTokenDetails(tokenContract);
@@ -395,7 +396,7 @@ function BridgeComponent() {
 
       if (tokenContract) {
         try {
-          console.log("inside sideto main", tokenAddressFrom);
+          console.log("inside sideto main");
           let result = await tokenContract.methods
             .approve(
               networkFrom.bridgeAddress,
@@ -408,12 +409,13 @@ function BridgeComponent() {
             console.log("approve result", result);
             let approveTxHash = result.transactionHash;
 
+            console.log("return input", networkFrom.bridgeAddress,walletAddress,networkTo.chainID, amountFormatted.toString(),approveTxHash);
             let returnResult = await sideBridgeContractFrom.methods
               .returnTokens(
                 walletAddress,
+                networkTo.chainID,               
                 amountFormatted.toString(),
-                approveTxHash,
-                networkTo.chainID
+                approveTxHash              
               )
               .send({ from: walletAddress });
 
@@ -680,7 +682,7 @@ function BridgeComponent() {
                 modalActive={false}
               />
 
-              <div className="d-flex justify-content-between info-wrp">
+              <div className="d-flex justify-content-between info-wrp mt-5">
                 <div className="d-flex justify-content-between align-items-center gap-2">
                   You will recieve
                 </div>
@@ -695,7 +697,7 @@ function BridgeComponent() {
               </div>
 
               <Collapse in={open}>
-                <div id="example-collapse-text">
+                <div id="example-collapse-text" className="mb-4">
                   <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
                     <span>Slippage</span>
                     <span>0.1</span>
@@ -730,7 +732,7 @@ function BridgeComponent() {
                     <h3>View Transactions</h3>
                   
                 <button
-                  className="btn btn-secondary mt-4"
+                  className="btn btn-primary mt-4"
                   onClick={(e) => {
                     handleShow();
                     getTransactions();

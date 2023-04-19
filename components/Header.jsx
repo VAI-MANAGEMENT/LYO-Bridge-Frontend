@@ -92,7 +92,7 @@ function Header({ currencyBalance }) {
           <div className="btn-wrp">
             <>
             {walletAddress ? (
-              <div className="d-flex justify-content-between gap-3 align-items-center m-2">
+              <>
                 <a className="btn btn-secondary" onClick={disconnectWallet}>
                   Disconnect
                 </a>
@@ -115,7 +115,7 @@ function Header({ currencyBalance }) {
                     {currencyBalance ? <div>{currencyBalance} USDT</div> : ""}
                   </Dropdown.Menu>
                 </Dropdown>
-              </div>
+              </>
             ) : (
               <a className="btn btn-primary" onClick={() => setShowConnectModal(true)}>
                 Connect
