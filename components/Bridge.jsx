@@ -58,7 +58,7 @@ function BridgeComponent() {
 
 
   const alert = useAlert();
-  const { walletAddress, chainId, switchNetwork } = useContext(WalletContext);
+  const { walletAddress, chainId, switchNetwork} = useContext(WalletContext);
   const web3eth = new Web3(
     Web3.givenProvider ||
     "https://solemn-summer-shadow.bsc-testnet.discover.quiknode.pro/1b0c85b08d945ae4d5838b5215d52e4aae37c21f/"
@@ -86,7 +86,7 @@ function BridgeComponent() {
 
   useEffect(() => {
     getSideBridgeContract();
-    setBridgeLoader(false)
+    setBridgeLoader(false);  
   }, [networkFrom,networkTo]);
 
   useEffect(() => {
@@ -487,7 +487,7 @@ function BridgeComponent() {
 
   const changeNetwork = async () => {
     const currentChainId = chainId;
-    if (currentChainId !== networkFrom) {
+    if (networkFrom && currentChainId !== networkFrom) {
       try {
         await web3.currentProvider.request({
           method: "wallet_switchEthereumChain",
@@ -503,20 +503,23 @@ function BridgeComponent() {
   };
 
   const addNetwork = (id, name, symbol, tokenDecimals, rpc) => {
-    const params = [{
-      chainId: Web3.utils.toHex(id),
-      chainName: name,
-      nativeCurrency: {
-        name: name,
-        symbol: symbol,
-        decimals: 18
-      },
-      rpcUrls: [rpc],
-      // blockExplorerUrls: ['https://explorer.rsk.co']
-    }]
-
-    window.ethereum.request({ method: 'wallet_addEthereumChain', params })
-      .then(() => console.log('Success'))
+    if(window.ethereum){
+      const params = [{
+        chainId: Web3.utils.toHex(id),
+        chainName: name,
+        nativeCurrency: {
+          name: name,
+          symbol: symbol,
+          decimals: 18
+        },
+        rpcUrls: [rpc],
+        // blockExplorerUrls: ['https://explorer.rsk.co']
+      }]
+  
+      window.ethereum.request({ method: 'wallet_addEthereumChain', params })
+        .then(() => console.log('Success'))
+    }
+   
 
   }
 
@@ -663,7 +666,7 @@ function BridgeComponent() {
                   <label>Asset</label>
                   <div className="dropdown-wrp input-wrp mb-3">
                     <div className="d-flex">
-                      <div class="d-flex gap-2 align-items-center"><Image src={logoSmall} width="20" height={20} />LYO</div>
+                      <div className="d-flex gap-2 align-items-center"><Image src={logoSmall} width="20" height={20} />LYO</div>
                     </div>
                   </div>
 
