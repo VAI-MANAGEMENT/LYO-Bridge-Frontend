@@ -33,8 +33,7 @@ export const WalletProvider = ({ children }) => {
 
   useEffect(() => {
     if (address && chainId == process.env.chain_id) {
-      getCurrencyBalance();
-      console.log("balance", currencyBalance);
+      getCurrencyBalance();   
     }
   }, [address, currencyBalance]);
 
@@ -59,8 +58,7 @@ export const WalletProvider = ({ children }) => {
 
   useEffect(() => {
     if (Web3.givenProvider) {
-      setChainId(Web3.givenProvider.networkVersion);
-      console.log("chainid", Web3.givenProvider.networkVersion);
+      setChainId(Web3.givenProvider.networkVersion);    
     }
   }, [chainId]);
 
@@ -108,8 +106,9 @@ export const WalletProvider = ({ children }) => {
 
   const getBalance = async (provider, walletAddress) => {
     const walletBalance = await provider.getBalance(walletAddress);
+   
     const balanceInEth = ethers.utils.formatEther(walletBalance);
-
+   
     setBalance(balanceInEth);
   };
 
@@ -150,7 +149,7 @@ export const WalletProvider = ({ children }) => {
 
   const mobileConnect = async () => {
     try {
-      const yourWebUrl = "https://lfinance.vercel.app/"; // Replace with your domain
+      const yourWebUrl = "https://bridge.lyocredit.io/"; // Replace with your domain
       const deepLink = `https://metamask.app.link/dapp/${yourWebUrl}`;
       const downloadMetamaskUrl = "https://metamask.io/download.html";
       setLoading(true);
@@ -179,8 +178,7 @@ export const WalletProvider = ({ children }) => {
     });
   }
 
-  const switchNetwork = async () => {
-    console.log("changing the network to testnest", chainId);
+  const switchNetwork = async () => {  
     const currentChainId = chainId;
 
     if (currentChainId !== process.env.chain_id && Web3.givenProvider) {

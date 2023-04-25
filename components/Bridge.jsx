@@ -53,6 +53,7 @@ function BridgeComponent() {
   const [bridgeLoader, setBridgeLoader] = useState(false);
   const [txData, setTxData] = useState();
   const [show, setShow] = useState(false);
+  const [fee, setFee] = useState();
   const [sideBridgeContractFrom, setSideBridgeContractFrom] = useState();
 
 
@@ -75,7 +76,7 @@ function BridgeComponent() {
 
   useEffect(() => {
     if (networkFrom && chainId) {
-      getTokenContract();    
+      getTokenContract();
     }
   }, [tokenAddressFrom, walletAddress, chainId, tokenAddressTo]);
 
@@ -85,7 +86,8 @@ function BridgeComponent() {
 
   useEffect(() => {
     getSideBridgeContract();
-  }, [networkFrom]);
+    setBridgeLoader(false)
+  }, [networkFrom,networkTo]);
 
   useEffect(() => {
     if (walletAddress) {
@@ -99,8 +101,20 @@ function BridgeComponent() {
     }
   }, [networkTo]);
 
+
   useEffect(() => {
     changeNetwork();
+    
+  }, [networkFrom]);
+
+  // useEffect(() => {
+  //   getFeeOtherNetworks();
+  // }, [sideBridgeContractFrom]);
+
+  useEffect(() => {  
+   
+    getFee();
+    renderActionButton()
   }, [networkFrom]);
 
   useEffect(() => {
@@ -133,21 +147,57 @@ function BridgeComponent() {
     }
   }
 
+  async function getFee() {
+    try {
+      console.log("🚀 ~ file: Bridge.jsx:152 ~ getFee ~ networkFrom.chainID:", networkFrom.chainID)
+      if (networkFrom.chainID == 97) {
+       
+        let feeAmount = await contractBridge.methods
+          .bridgeFee()
+          .call({ from: walletAddress });
+        console.log("🚀 ~ file: Bridge.jsx:144 ~ getFeeMainNetwork ~ feeAmount:", feeAmount)
+        setFee(feeAmount)
+      }
+      else {       
+          let feeAmount = await sideBridgeContractFrom.methods
+          .bridgeFee()
+          .call({ from: walletAddress });
+         console.log("🚀 ~ file: Bridge.jsx:161 ~ getFeeOtherNetworks ~ feeAmount:", feeAmount)
+        setFee(feeAmount)
+    
+      
+      }
+
+    } catch (error) {
+      console.log("🚀 ~ file: Bridge.jsx:155 ~ getFee ~ error:", error)
+
+    }
+
+  }
+
+
+
   function getSideBridgeContract() {
+
     if (networkFrom && networkFrom.bridgeAddress) {
-      console.log("sidebridge address", networkFrom.bridgeAddress)
       try {
+        console.log("🚀 ~ file: Bridge.jsx:172 ~ getSideBridgeContract ~ networkFrom.bridgeAddress:", networkFrom.bridgeAddress)
         const contract = new web3eth.eth.Contract(sideBridgeABI, networkFrom.bridgeAddress);
         setSideBridgeContractFrom(contract);
+
+        // setTimeout(() => {
+        //   if(sideBridgeContractFrom && sideBridgeABI && networkFrom.bridgeAddress){
+        //   getFee();
+        //   }
+        //   }, 10000);
+
       } catch (error) {
         console.log(error)
       }
-
     }
   }
 
   async function getTokenDetails(tokenContract) {
-    console.log("tokenad changed", tokenAddressFrom, networkFrom);
     try {
       let decimals = await Web3Calls.getTokenDecimals(tokenContract);
       setTokenDecimals(decimals);
@@ -210,7 +260,7 @@ function BridgeComponent() {
     setAmount(e);
   }
 
-  function renderActionButton() {
+  function renderActionButton() {  
     if (!walletAddress) {
       return (
         <button
@@ -221,7 +271,13 @@ function BridgeComponent() {
         </button>
       );
     }
-
+    if (networkFrom && networkTo && (networkFrom.chainID) == (networkTo.chainID)) {
+      return (
+        <button className="btn btn-primary mb-2" disabled>
+          From and To networks can{""}t be same
+        </button>
+      );
+    }
     if ((amount && amount.length < 1) || amount == 0) {
       return (
         <button className="btn btn-primary mb-2" disabled>
@@ -237,7 +293,7 @@ function BridgeComponent() {
         </button>
       );
     }
-    if (!networkFrom || !networkTo) {
+    if (!networkFrom || !networkTo ) {
       return (
         <button className="btn btn-primary mb-2" disabled>
           Please select networks
@@ -245,13 +301,7 @@ function BridgeComponent() {
       );
     }
 
-    if (networkFrom == networkTo) {
-      return (
-        <button className="btn btn-primary mb-2" disabled>
-          From and To networks can{""}t be same
-        </button>
-      );
-    }
+  
     if (bridgeLoader == true) {
       return (
         <button className="btn btn-primary mb-2" disabled>
@@ -342,8 +392,6 @@ function BridgeComponent() {
       useGrouping: false,
     });
 
-    console.log("from, to", networkFrom.chainID, networkTo.chainID)
-
     if (networkFrom.chainID == 97) {
       try {
         if (tokenContract) {
@@ -357,28 +405,24 @@ function BridgeComponent() {
           if (result) {
 
             let approveTxHash = result.transactionHash;
-
-            console.log(networkTo.chainID,)
-            console.log("lock input",  networkTo.chainID,amountFormatted.toString(),approveTxHash);
+            getFee()
             let lock = await contractBridge.methods
               .lockTokens(
                 networkTo.chainID,
                 amountFormatted.toString(),
                 approveTxHash
               )
-              .send({ from: walletAddress });
+              .send({ from: walletAddress, value: fee });
 
-            console.log("lock result", lock);
 
             let lockTxHash = lock.transactionHash;
 
             if (lockTxHash) {
               setTimeout(() => {
-                console.log("inside timeout");
                 getTxStatus(lockTxHash);
                 setBridgeLoader(false);
                 setAmount(0);
-              }, 10000);
+              }, 15000);
             }
 
             getTokenDetails(tokenContract);
@@ -396,7 +440,6 @@ function BridgeComponent() {
 
       if (tokenContract) {
         try {
-          console.log("inside sideto main");
           let result = await tokenContract.methods
             .approve(
               networkFrom.bridgeAddress,
@@ -406,26 +449,21 @@ function BridgeComponent() {
 
           if (result) {
 
-            console.log("approve result", result);
             let approveTxHash = result.transactionHash;
-
-            console.log("return input", networkFrom.bridgeAddress,walletAddress,networkTo.chainID, amountFormatted.toString(),approveTxHash);
+            getFee()
             let returnResult = await sideBridgeContractFrom.methods
               .returnTokens(
                 walletAddress,
-                networkTo.chainID,               
+                networkTo.chainID,
                 amountFormatted.toString(),
-                approveTxHash              
+                approveTxHash
               )
-              .send({ from: walletAddress });
-
-            console.log("returnResult", returnResult);
+              .send({ from: walletAddress, value: fee });
 
             let returnResultHash = returnResult.transactionHash;
 
             if (returnResultHash) {
               setTimeout(() => {
-                console.log("inside timeout");
                 getTxStatus(returnResultHash);
                 setBridgeLoader(false);
                 setAmount(0);
@@ -436,7 +474,6 @@ function BridgeComponent() {
 
           }
         } catch (error) {
-          console.log("tx failed");
           console.log(error)
           setBridgeLoader(false)
         }
@@ -466,7 +503,6 @@ function BridgeComponent() {
   };
 
   const addNetwork = (id, name, symbol, tokenDecimals, rpc) => {
-    console.log(id, name, symbol, tokenDecimals, rpc);
     const params = [{
       chainId: Web3.utils.toHex(id),
       chainName: name,
@@ -485,7 +521,6 @@ function BridgeComponent() {
   }
 
   function getGasFee(networkChainId) {
-    console.log("get gas", networkChainId);
     if (networkChainId == 97) {
       let result = ApiCalls.getGasBsc();
       result
@@ -621,134 +656,132 @@ function BridgeComponent() {
       <section className="content-wrp">
         <div className="container">
           <div className="row">
-          <h2>Bridge</h2>
-          <div className="col-lg-8">        
-            <div className="card-container swap-container">
-              <div className="custom-select">
-                <label>Asset</label>
-                <div className="dropdown-wrp input-wrp mb-3">
-                  <div className="d-flex">
-                    <div class="d-flex gap-2 align-items-center"><Image src={logoSmall} width="20" height={20} />LYO</div>
-                  </div>
-                </div>
-
-              </div>
-
-              <div className="row network-row">
-                <div className="col-md-6">
-                  <label>From</label>
-                  <CustomDropdown
-                    selectedItem={networkFrom}
-                    modalTitle={"Select Network"}
-                    itemList={networks}
-                    setSelectedItem={setNetworkFrom}
-                    tokenAd={tokenAddressFrom}
-                    setTokenAd={setTokenAddressFrom}
-                  />
-                </div>
-                <BiRefresh
-                  className="icon-refresh"
-                  onClick={(e) => {
-                    setNetworkFrom(networkTo);
-                    setNetworkTo(networkFrom);
-                    setTokenAddressFrom(tokenAddressTo)
-                    setTokenAddressTo(tokenAddressFrom)
-                  }}
-                />
-                <div className="col-md-6">
-                  <label>To</label>
-                  <CustomDropdown
-                    selectedItem={networkTo}
-                    modalTitle={"Select Network"}
-                    itemList={networks}
-                    setSelectedItem={setNetworkTo}
-                    tokenAd={tokenAddressTo}
-                    setTokenAd={setTokenAddressTo}
-                  />
-                </div>
-              </div>
-
-              <label>Amount</label>
-              <InputComponent
-                imgPath={assetList[0].imageUrl}
-                labelName={assetList[0].name}
-                copyText={networkFrom ? tokenAddressFrom : ""}
-                balance={tokenBalance}
-                radioSelector={true}
-                inputValue={amount}
-                setInputAmount={getAmount}
-                symbol={assetList[0].name}
-                tokenDecimal={tokenDecimals}
-                modalActive={false}
-              />
-
-              <div className="d-flex justify-content-between info-wrp mt-5">
-                <div className="d-flex justify-content-between align-items-center gap-2">
-                  You will recieve
-                </div>
-                <div
-                  onClick={() => setOpen(!open)}
-                  aria-controls="example-collapse-text"
-                  aria-expanded={open}
-                >
-                  {amount} {assetList[0].name}
-                  <RiArrowDownSLine />
-                </div>
-              </div>
-
-              <Collapse in={open}>
-                <div id="example-collapse-text" className="mb-4">
-                  <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
-                    <span>Slippage</span>
-                    <span>0.1</span>
-                  </div>
-                  {gasOnDestination ? (
-                    <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
-                      <span>Gas on Destination</span>
-                      <span>
-                        {gasOnDestination} {networkTo.symbol}
-                      </span>
+            <h2>Bridge</h2>
+            <div className="col-lg-8">
+              <div className="card-container swap-container">
+                <div className="custom-select">
+                  <label>Asset</label>
+                  <div className="dropdown-wrp input-wrp mb-3">
+                    <div className="d-flex">
+                      <div class="d-flex gap-2 align-items-center"><Image src={logoSmall} width="20" height={20} />LYO</div>
                     </div>
-                  ) : (
-                    ""
-                  )}
-                  <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
-                    <span>Fee</span>
-                    <span>$ 0</span>
+                  </div>
+
+                </div>
+
+                <div className="row network-row">
+                  <div className="col-md-6">
+                    <label>From</label>
+                    <CustomDropdown
+                      selectedItem={networkFrom}
+                      modalTitle={"Select Network"}
+                      itemList={networks}
+                      setSelectedItem={setNetworkFrom}
+                      tokenAd={tokenAddressFrom}
+                      setTokenAd={setTokenAddressFrom}
+                    />
+                  </div>
+                  <BiRefresh
+                    className="icon-refresh"
+                    onClick={(e) => {
+                      setNetworkFrom(networkTo);
+                      setNetworkTo(networkFrom);
+                      setTokenAddressFrom(tokenAddressTo)
+                      setTokenAddressTo(tokenAddressFrom)
+                    }}
+                  />
+                  <div className="col-md-6">
+                    <label>To</label>
+                    <CustomDropdown
+                      selectedItem={networkTo}
+                      modalTitle={"Select Network"}
+                      itemList={networks}
+                      setSelectedItem={setNetworkTo}
+                      tokenAd={tokenAddressTo}
+                      setTokenAd={setTokenAddressTo}
+                    />
                   </div>
                 </div>
-              </Collapse>
 
-              <div className="btn-wrp">{renderActionButton()}</div>
+                <label>Amount</label>
+                <InputComponent
+                  imgPath={assetList[0].imageUrl}
+                  labelName={assetList[0].name}
+                  copyText={networkFrom ? tokenAddressFrom : ""}
+                  balance={tokenBalance}
+                  radioSelector={true}
+                  inputValue={amount}
+                  setInputAmount={getAmount}
+                  symbol={assetList[0].name}
+                  tokenDecimal={tokenDecimals}
+                  modalActive={false}
+                />
 
-              
-            </div>
-          </div>
-          <div className="col-lg-4">
-           <TokenInfo/>
-
-           {walletAddress && txData && txData.length > 0 ? (
-           <div className="card-container">
-                    <h3>View Transactions</h3>
-                  
-                <button
-                  className="btn btn-primary mt-4"
-                  onClick={(e) => {
-                    handleShow();
-                    getTransactions();
-                  }}
-                >
-                  View Transactions
-                </button>
-             
+                <div className="d-flex justify-content-between info-wrp mt-5">
+                  <div className="d-flex justify-content-between align-items-center gap-2">
+                    You will recieve
+                  </div>
+                  <div
+                    onClick={() => setOpen(!open)}
+                    aria-controls="example-collapse-text"
+                    aria-expanded={open}
+                  >
+                    {amount} {assetList[0].name}
+                    <RiArrowDownSLine />
+                  </div>
                 </div>
-                 ) : (
-                  ""
-                )}
+
+                <Collapse in={open}>
+                  <div id="example-collapse-text" className="mb-4">
+                    {gasOnDestination ? (
+                      <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
+                        <span>Gas on Destination</span>
+                        <span>
+                          {gasOnDestination} {networkTo.symbol}
+                        </span>
+                      </div>
+                    ) : (
+                      ""
+                    )}
+                    {fee ?
+                      <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
+                        <span>Fee</span>
+                        <span>{(parseFloat(fee)) / 10 ** 18}</span>
+                      </div>
+                      : ""}
+                  </div>
+                </Collapse>
+
+                <div className="btn-wrp">{renderActionButton()}</div>
+
+
+              </div>
+            </div>
+            <div className="col-lg-4">
+              <TokenInfo />
+
+              {walletAddress && txData && txData.length > 0 ? (
+                <div className="card-container">
+                  <h3>View Transactions</h3>
+
+                  <button
+                    className="btn btn-primary mt-4"
+                    onClick={(e) => {
+                      handleShow();
+                      getTransactions();
+                    }}
+                  >
+                    View Transactions
+                  </button>
+
+                </div>
+              ) : (
+                ""
+              )}
+            </div>
+
           </div>
-          
-          </div>
-         
+
         </div>
       </section>
       <ConnectWalletModal

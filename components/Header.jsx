@@ -66,9 +66,7 @@ function Header({ currencyBalance }) {
         <Container>
           <a
             className="navbar-brand"
-            href="https://lfi.io/"
-            target="_blank"
-            rel="noreferrer"
+            href="#"          
           >
             <Image src={Logo} alt="LFI" /> LYOBRIDGE
           </a>
@@ -109,10 +107,7 @@ function Header({ currencyBalance }) {
 
                   <Dropdown.Menu>
                     <h6>Balances</h6>
-                    {balance ? <div>{balance} BNB</div> : ""}
-                    {lfiBalance ? <div>{lfiBalance} LFI</div> : ""}
-                    {wlfiBalance ? <div>{wlfiBalance} vLFI</div> : ""}
-                    {currencyBalance ? <div>{currencyBalance} USDT</div> : ""}
+                    {balance ? <div>{(parseFloat(balance)).toFixed(3)} BNB</div> : ""}                            
                   </Dropdown.Menu>
                 </Dropdown>
               </>
