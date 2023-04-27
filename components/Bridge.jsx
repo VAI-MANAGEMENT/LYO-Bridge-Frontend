@@ -782,7 +782,7 @@ function BridgeComponent() {
                     ) : (
                       ""
                     )}
-                    {fee ?
+                    {fee && networkFrom ?
                       <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
                         <span>Fee</span>
                         <span>{(parseFloat(fee)) / 10 ** 18} {networkFrom.symbol}</span>
