@@ -1,7 +1,7 @@
 import Image from "next/image";
 import React, { useState, useEffect, useContext } from "react";
 import logoSmall from "../public/logo-small.png";
-import { Tooltip } from "@nextui-org/react";
+import { Tooltip, changeTheme } from "@nextui-org/react";
 import Moment from "react-moment";
 import { BiRefresh } from "react-icons/bi";
 import { BsQuestionCircle } from "react-icons/bs";
@@ -40,7 +40,8 @@ function BridgeComponent() {
   const [key, setKey] = useState("bridge");
   const [tokenContract, setTokenContract] = useState();
   const [tokenBalance, setTokenBalance] = useState();
-  const [tokenDecimals, setTokenDecimals] = useState();
+  const [bridgeTokenBalance, setBridgeTokenBalance] = useState();
+  const [tokenDecimals, setTokenDecimals] = useState(8);
   const [amount, setAmount] = useState(0);
   const [networkFrom, setNetworkFrom] = useState();
   const [networkTo, setNetworkTo] = useState();
@@ -58,7 +59,7 @@ function BridgeComponent() {
 
 
   const alert = useAlert();
-  const { walletAddress, chainId, switchNetwork} = useContext(WalletContext);
+  const { walletAddress, chainId, switchNetwork } = useContext(WalletContext);
   const web3eth = new Web3(
     Web3.givenProvider ||
     "https://solemn-summer-shadow.bsc-testnet.discover.quiknode.pro/1b0c85b08d945ae4d5838b5215d52e4aae37c21f/"
@@ -86,8 +87,8 @@ function BridgeComponent() {
 
   useEffect(() => {
     getSideBridgeContract();
-    setBridgeLoader(false);  
-  }, [networkFrom,networkTo]);
+    setBridgeLoader(false);
+  }, [networkFrom, networkTo]);
 
   useEffect(() => {
     if (walletAddress) {
@@ -104,18 +105,29 @@ function BridgeComponent() {
 
   useEffect(() => {
     changeNetwork();
-    
+
   }, [networkFrom]);
 
   // useEffect(() => {
-  //   getFeeOtherNetworks();
-  // }, [sideBridgeContractFrom]);
+  //   getBridgeTokenBalance();
+  // }, [amount]);
+
+  useEffect(() => {
+
+    renderActionButton();
+    // getBridgeTokenBalance(networkFrom)
+  }, [networkFrom]);
+
+ 
+  useEffect(() => {
+
+   getFee()
+  
+  }, [chainId]);
 
   useEffect(() => {  
-   
-    getFee();
-    renderActionButton()
-  }, [networkFrom]);
+    getBridgeTokenBalance()
+   }, [chainId,tokenContract,tokenBalance]);
 
   useEffect(() => {
     if (chainId != 97) {
@@ -146,33 +158,58 @@ function BridgeComponent() {
 
     }
   }
-
+ 
   async function getFee() {
+  
     try {
-      console.log("🚀 ~ file: Bridge.jsx:152 ~ getFee ~ networkFrom.chainID:", networkFrom.chainID)
-      if (networkFrom.chainID == 97) {
+      if (chainId == 97) {   
+        console.log("🚀gett fee") 
+        let feeAmount = await contractBridge.methods.bridgeFee().call();      
+        console.log("🚀 ~ file: Bridge.jsx:165 ~ getFee ~ feeAmount:", feeAmount) 
+        setFee(feeAmount)
+        return feeAmount     
+     
+      }
+      else {
        
-        let feeAmount = await contractBridge.methods
-          .bridgeFee()
-          .call({ from: walletAddress });
-        console.log("🚀 ~ file: Bridge.jsx:144 ~ getFeeMainNetwork ~ feeAmount:", feeAmount)
-        setFee(feeAmount)
+        const contract = new web3eth.eth.Contract(sideBridgeABI, networkFrom.bridgeAddress);
+          console.log("🚀 ~ file: Bridge.jsx:169 ~ getFee ~ contract:", contract)
+          
+          let feeAmount = await contract.methods.bridgeFee().call();
+          console.log("🚀 ~ file: Bridge.jsx:172 ~ getFee ~ feeAmount:", feeAmount)    
+          setFee(feeAmount) 
+          return feeAmount         
+          
       }
-      else {       
-          let feeAmount = await sideBridgeContractFrom.methods
-          .bridgeFee()
-          .call({ from: walletAddress });
-         console.log("🚀 ~ file: Bridge.jsx:161 ~ getFeeOtherNetworks ~ feeAmount:", feeAmount)
-        setFee(feeAmount)
-    
-      
-      }
+
 
     } catch (error) {
-      console.log("🚀 ~ file: Bridge.jsx:155 ~ getFee ~ error:", error)
+      console.log("🚀 ~ file: Bridge.jsx:181 ~ getFee ~ error:", error)
 
     }
 
+  }
+
+  async function getBridgeTokenBalance() {
+   
+   if(networkFrom){
+  
+    const contract = new web3eth.eth.Contract(tokenABI,networkFrom.childTokenAddress);
+    let tokenBal = await contract.methods.balanceOf(networkFrom.bridgeAddress).call({ from: networkFrom.bridgeAddress });
+    tokenBal = tokenBal / 10 ** tokenDecimals
+    setBridgeTokenBalance(tokenBal)
+    console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
+   }   
+   else{
+    if(tokenContract){
+      let tokenBal = await tokenContract.methods.balanceOf( process.env.MAIN_BRIDGE_ADDRESS).call({ from:  process.env.MAIN_BRIDGE_ADDRESS });
+      tokenBal = tokenBal / 10 ** tokenDecimals
+      setBridgeTokenBalance(tokenBal)
+      console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
+    }
+   
+   } 
+   
   }
 
 
@@ -260,7 +297,7 @@ function BridgeComponent() {
     setAmount(e);
   }
 
-  function renderActionButton() {  
+  function renderActionButton() {
     if (!walletAddress) {
       return (
         <button
@@ -293,7 +330,14 @@ function BridgeComponent() {
         </button>
       );
     }
-    if (!networkFrom || !networkTo ) {
+    if (parseFloat(amount) >= parseFloat(bridgeTokenBalance)) {
+      return (
+        <button className="btn btn-primary mb-2" disabled>
+          Bridging this amount is currently not possible
+        </button>
+      );
+    }
+    if (!networkFrom || !networkTo) {
       return (
         <button className="btn btn-primary mb-2" disabled>
           Please select networks
@@ -301,7 +345,7 @@ function BridgeComponent() {
       );
     }
 
-  
+
     if (bridgeLoader == true) {
       return (
         <button className="btn btn-primary mb-2" disabled>
@@ -395,6 +439,7 @@ function BridgeComponent() {
     if (networkFrom.chainID == 97) {
       try {
         if (tokenContract) {
+
           let result = await tokenContract.methods
             .approve(
               process.env.MAIN_BRIDGE_ADDRESS,
@@ -402,11 +447,14 @@ function BridgeComponent() {
             )
             .send({ from: walletAddress });
 
+        
           if (result) {
 
             let approveTxHash = result.transactionHash;
-            getFee()
-            let lock = await contractBridge.methods
+         
+
+            if (fee){
+              let lock = await contractBridge.methods
               .lockTokens(
                 networkTo.chainID,
                 amountFormatted.toString(),
@@ -426,6 +474,9 @@ function BridgeComponent() {
             }
 
             getTokenDetails(tokenContract);
+            }
+
+            
           }
         }
       } catch (error) {
@@ -440,6 +491,7 @@ function BridgeComponent() {
 
       if (tokenContract) {
         try {
+
           let result = await tokenContract.methods
             .approve(
               networkFrom.bridgeAddress,
@@ -448,29 +500,35 @@ function BridgeComponent() {
             .send({ from: walletAddress });
 
           if (result) {
-
-            let approveTxHash = result.transactionHash;
-            getFee()
-            let returnResult = await sideBridgeContractFrom.methods
-              .returnTokens(
-                walletAddress,
-                networkTo.chainID,
-                amountFormatted.toString(),
-                approveTxHash
-              )
-              .send({ from: walletAddress, value: fee });
-
-            let returnResultHash = returnResult.transactionHash;
-
-            if (returnResultHash) {
-              setTimeout(() => {
-                getTxStatus(returnResultHash);
-                setBridgeLoader(false);
-                setAmount(0);
-              }, 15000);
-
+           
+            if(fee){
+              let approveTxHash = result.transactionHash;
+              let gas = await ApiCalls.getGasFee(networkFrom.chainID);
+              gas = gas * 21000;
+              gas = parseInt(gas + (gas * 0.2))
+              console.log("🚀 ~ file: Bridge.jsx:480 ~ callBridge ~ gasFormatted:", gas)
+              let returnResult = await sideBridgeContractFrom.methods
+                .returnTokens(
+                  walletAddress,
+                  networkTo.chainID,
+                  amountFormatted.toString(),
+                  approveTxHash
+                )
+                .send({ from: walletAddress, value: fee, gas: gas });
+  
+              let returnResultHash = returnResult.transactionHash;
+  
+              if (returnResultHash) {
+                setTimeout(() => {
+                  getTxStatus(returnResultHash);
+                  setBridgeLoader(false);
+                  setAmount(0);
+                }, 15000);
+  
+              }
+              getTokenDetails(tokenContract);
             }
-            getTokenDetails(tokenContract);
+            
 
           }
         } catch (error) {
@@ -503,7 +561,7 @@ function BridgeComponent() {
   };
 
   const addNetwork = (id, name, symbol, tokenDecimals, rpc) => {
-    if(window.ethereum){
+    if (window.ethereum) {
       const params = [{
         chainId: Web3.utils.toHex(id),
         chainName: name,
@@ -515,48 +573,20 @@ function BridgeComponent() {
         rpcUrls: [rpc],
         // blockExplorerUrls: ['https://explorer.rsk.co']
       }]
-  
+
       window.ethereum.request({ method: 'wallet_addEthereumChain', params })
         .then(() => console.log('Success'))
     }
-   
+
 
   }
 
-  function getGasFee(networkChainId) {
-    if (networkChainId == 97) {
-      let result = ApiCalls.getGasBsc();
-      result
-        .then((response) => {
-          if (response.data.status == 1) {
-            let gas = response.data.result.SafeGasPrice;
+  async function getGasFee(networkChainId) {
+    let gas = await ApiCalls.getGasFee(networkChainId);
+    let totalGas = ((21000 * gas) / 10 ** 9).toFixed(4);
 
-            //  totalFee = units of gas used * (base fee + priority fee)
-            let totalGas = ((21000 * gas) / 10 ** 9).toFixed(4);
-            setGasOnDestination(totalGas);
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    }
 
-    if (networkChainId == 80001) {
-      let result = ApiCalls.getGasPolygon();
-      result
-        .then((response) => {
-          if (response.data.status == 1) {
-            let gas = response.data.result.SafeGasPrice;
-
-            //  totalFee = units of gas used * (base fee + priority fee)
-            let totalGas = ((21000 * gas) / 10 ** 9).toFixed(5);
-            setGasOnDestination(totalGas);
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    }
+    setGasOnDestination(totalGas);
   }
 
   function getNetworkName(networkSlug) {
@@ -607,7 +637,7 @@ function BridgeComponent() {
 
               getNetworkNameFromID(allTx[i].walletToBridge.chainID),
 
-              <span key={i}>{(allTx[i].isCompleted == true) ? <span className="badge bg-success rounded-pill">Completed</span> : <span className="badge bg-danger rounded-pill">Failed</span>}</span>,
+              <span key={i}>{(allTx[i].isCompleted == true) ? <span className="badge bg-success rounded-pill">Completed</span> : <span className="badge bg-danger rounded-pill">Not Completed</span>}</span>,
 
               <span key={i} >{allTx[i].bridgeToWallet.transactionHash ?
                 <div className="d-flex align-items-center gap-1">
@@ -749,7 +779,7 @@ function BridgeComponent() {
                     {fee ?
                       <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
                         <span>Fee</span>
-                        <span>{(parseFloat(fee)) / 10 ** 18}</span>
+                        <span>{(parseFloat(fee)) / 10 ** 18} {networkFrom.symbol}</span>
                       </div>
                       : ""}
                   </div>
