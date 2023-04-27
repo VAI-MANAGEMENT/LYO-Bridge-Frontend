@@ -191,24 +191,30 @@ function BridgeComponent() {
   }
 
   async function getBridgeTokenBalance() {
-   
-   if(networkFrom){
+    try {
+      if(networkFrom){
   
-    const contract = new web3eth.eth.Contract(tokenABI,networkFrom.childTokenAddress);
-    let tokenBal = await contract.methods.balanceOf(networkFrom.bridgeAddress).call({ from: networkFrom.bridgeAddress });
-    tokenBal = tokenBal / 10 ** tokenDecimals
-    setBridgeTokenBalance(tokenBal)
-    console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
-   }   
-   else{
-    if(tokenContract){
-      let tokenBal = await tokenContract.methods.balanceOf( process.env.MAIN_BRIDGE_ADDRESS).call({ from:  process.env.MAIN_BRIDGE_ADDRESS });
-      tokenBal = tokenBal / 10 ** tokenDecimals
-      setBridgeTokenBalance(tokenBal)
-      console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
+        const contract = new web3eth.eth.Contract(tokenABI,networkFrom.childTokenAddress);
+        let tokenBal = await contract.methods.balanceOf(networkFrom.bridgeAddress).call({ from: networkFrom.bridgeAddress });
+        tokenBal = tokenBal / 10 ** tokenDecimals
+        setBridgeTokenBalance(tokenBal)
+        console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
+       }   
+       else{
+        if(tokenContract){
+          let tokenBal = await tokenContract.methods.balanceOf( process.env.MAIN_BRIDGE_ADDRESS).call({ from:  process.env.MAIN_BRIDGE_ADDRESS });
+          tokenBal = tokenBal / 10 ** tokenDecimals
+          setBridgeTokenBalance(tokenBal)
+          console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
+        }
+       
+       }
+    } catch (error) {
+      console.log("🚀 ~ file: Bridge.jsx:213 ~ getBridgeTokenBalance ~ error:", error)
+      
     }
    
-   } 
+   
    
   }
 
