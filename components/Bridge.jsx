@@ -7,6 +7,7 @@ import { BiRefresh } from "react-icons/bi";
 import { BsQuestionCircle } from "react-icons/bs";
 import InputComponent from "./InputComponent";
 import { WalletContext } from "../context/WalletConnect";
+import axios from "axios";
 import { useAlert } from "react-alert";
 const Web3 = require("web3");
 import Web3Calls from "../utils/web3Calls";
@@ -367,7 +368,7 @@ function BridgeComponent() {
     }
   }
 
-  function getNetworks() {
+  function getNetworks() {   
     let result = ApiCalls.getNetworks();
     result
       .then((response) => {
@@ -378,7 +379,8 @@ function BridgeComponent() {
       })
       .catch((e) => {
         console.log(e);
-      });
+      });   
+    
   }
 
   async function getTxStatus(hash) {
@@ -404,7 +406,7 @@ function BridgeComponent() {
       else {
         alert.show(
           <div>
-            Transaction is pending <br />{" "}
+            Transaction is pending for approval <br />{" "}
             <a className="link" onClick={(e) => { handleShow(); getTransactions(); }}>
               View Status
             </a>
@@ -476,7 +478,7 @@ function BridgeComponent() {
                 getTxStatus(lockTxHash);
                 setBridgeLoader(false);
                 setAmount(0);
-              }, 15000);
+              }, 10000);
             }
 
             getTokenDetails(tokenContract);
@@ -529,7 +531,7 @@ function BridgeComponent() {
                   getTxStatus(returnResultHash);
                   setBridgeLoader(false);
                   setAmount(0);
-                }, 15000);
+                }, 10000);
   
               }
               getTokenDetails(tokenContract);
@@ -643,7 +645,7 @@ function BridgeComponent() {
 
               getNetworkNameFromID(allTx[i].walletToBridge.chainID),
 
-              <span key={i}>{(allTx[i].isCompleted == true) ? <span className="badge bg-success rounded-pill">Completed</span> : <span className="badge bg-danger rounded-pill">Not Completed</span>}</span>,
+              <span key={i}>{(allTx[i].isCompleted == true) ? <span className="badge bg-success rounded-pill">Completed</span> : <span className="badge bg-warning rounded-pill">Pending for approval</span>}</span>,
 
               <span key={i} >{allTx[i].bridgeToWallet.transactionHash ?
                 <div className="d-flex align-items-center gap-1">
