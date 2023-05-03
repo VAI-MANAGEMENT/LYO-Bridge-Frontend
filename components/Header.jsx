@@ -82,9 +82,7 @@ function Header({ currencyBalance }) {
                   Connect
                 </a>
               )}
-            </div>
-
-            <Navbar.Toggle aria-controls="navbarTogglerDemo02" />
+            </div>         
           </div>
 
           <div className="btn-wrp">

@@ -2399,3 +2399,20 @@ hr {
 
 
 }
+
+@media only screen and (max-width: 500px) {
+  .input-wrp{
+    padding: 11px;
+    font-size: 14px;
+  }
+
+  .inputRow{
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  footer .logo-wrp {
+    width: 100px;
+    text-align: center;
+}
+}

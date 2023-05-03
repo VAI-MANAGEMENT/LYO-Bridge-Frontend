@@ -126,6 +126,10 @@ function BridgeComponent() {
   
   }, [chainId]);
 
+  useEffect(() => {
+    getTokenDetails(process.env.BRIDGE_MAIN_TOKEN_ADDRESS);  
+  }, []);
+
   useEffect(() => {  
     getBridgeTokenBalance()
    }, [chainId,tokenContract,tokenBalance]);
