@@ -3,6 +3,7 @@ import React, { useState, useEffect, useContext } from "react";
 import logoSmall from "../public/logo-small.png";
 import { Tooltip, changeTheme } from "@nextui-org/react";
 import Moment from "react-moment";
+import moment from 'moment';
 import { BiRefresh } from "react-icons/bi";
 import { BsQuestionCircle } from "react-icons/bs";
 import InputComponent from "./InputComponent";
@@ -119,20 +120,20 @@ function BridgeComponent() {
     // getBridgeTokenBalance(networkFrom)
   }, [networkFrom]);
 
- 
+
   useEffect(() => {
 
-   getFee()
-  
+    getFee()
+
   }, [chainId]);
 
   useEffect(() => {
-    getTokenDetails(process.env.BRIDGE_MAIN_TOKEN_ADDRESS);  
+    getTokenDetails(process.env.BRIDGE_MAIN_TOKEN_ADDRESS);
   }, []);
 
-  useEffect(() => {  
+  useEffect(() => {
     getBridgeTokenBalance()
-   }, [chainId,tokenContract,tokenBalance]);
+  }, [chainId, tokenContract, tokenBalance]);
 
   useEffect(() => {
     if (chainId != 97) {
@@ -163,28 +164,28 @@ function BridgeComponent() {
 
     }
   }
- 
+
   async function getFee() {
-  
+
     try {
-      if (chainId == 97) {   
-        console.log("🚀gett fee") 
-        let feeAmount = await contractBridge.methods.bridgeFee().call();      
-        console.log("🚀 ~ file: Bridge.jsx:165 ~ getFee ~ feeAmount:", feeAmount) 
+      if (chainId == 97) {
+        console.log("🚀gett fee")
+        let feeAmount = await contractBridge.methods.bridgeFee().call();
+        console.log("🚀 ~ file: Bridge.jsx:165 ~ getFee ~ feeAmount:", feeAmount)
         setFee(feeAmount)
-        return feeAmount     
-     
+        return feeAmount
+
       }
       else {
-       
+
         const contract = new web3eth.eth.Contract(sideBridgeABI, networkFrom.bridgeAddress);
-          console.log("🚀 ~ file: Bridge.jsx:169 ~ getFee ~ contract:", contract)
-          
-          let feeAmount = await contract.methods.bridgeFee().call();
-          console.log("🚀 ~ file: Bridge.jsx:172 ~ getFee ~ feeAmount:", feeAmount)    
-          setFee(feeAmount) 
-          return feeAmount         
-          
+        console.log("🚀 ~ file: Bridge.jsx:169 ~ getFee ~ contract:", contract)
+
+        let feeAmount = await contract.methods.bridgeFee().call();
+        console.log("🚀 ~ file: Bridge.jsx:172 ~ getFee ~ feeAmount:", feeAmount)
+        setFee(feeAmount)
+        return feeAmount
+
       }
 
 
@@ -197,30 +198,30 @@ function BridgeComponent() {
 
   async function getBridgeTokenBalance() {
     try {
-      if(networkFrom){
-  
-        const contract = new web3eth.eth.Contract(tokenABI,networkFrom.childTokenAddress);
+      if (networkFrom) {
+
+        const contract = new web3eth.eth.Contract(tokenABI, networkFrom.childTokenAddress);
         let tokenBal = await contract.methods.balanceOf(networkFrom.bridgeAddress).call({ from: networkFrom.bridgeAddress });
         tokenBal = tokenBal / 10 ** tokenDecimals
         setBridgeTokenBalance(tokenBal)
         console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
-       }   
-       else{
-        if(tokenContract){
-          let tokenBal = await tokenContract.methods.balanceOf( process.env.MAIN_BRIDGE_ADDRESS).call({ from:  process.env.MAIN_BRIDGE_ADDRESS });
+      }
+      else {
+        if (tokenContract) {
+          let tokenBal = await tokenContract.methods.balanceOf(process.env.MAIN_BRIDGE_ADDRESS).call({ from: process.env.MAIN_BRIDGE_ADDRESS });
           tokenBal = tokenBal / 10 ** tokenDecimals
           setBridgeTokenBalance(tokenBal)
           console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
         }
-       
-       }
+
+      }
     } catch (error) {
       console.log("🚀 ~ file: Bridge.jsx:213 ~ getBridgeTokenBalance ~ error:", error)
-      
+
     }
-   
-   
-   
+
+
+
   }
 
 
@@ -269,38 +270,109 @@ function BridgeComponent() {
     selectableRows: false,
     responsive: "standard",
     sort: true,
-    filter: false,
+    filter: true,
     download: false,
+    caseSensitive: false,
+    searchPlaceholder: 'Search by Date, Amount, Network',
   };
 
   const columns = [
     {
       name: "Created at",
       label: "Created at",
+      options: {
+        filter: false,
+        sort: true,
+        customBodyRender: (value) => {
+          return moment(value).format("D MMM YYYY - hh:mm A")           
+        
+        },
+      },
     },
     {
       name: "Amount",
-      label: "Amount (LFI)",
+      label: "Amount (LYO)",
       options: {
-        filter: true,
-        sort: false,
+        filter: false,
+        sort: true,
+        searchable: true,
+        customBodyRender: (value) => {
+          return (Web3.utils.fromWei(value) * 10 ** 10).toFixed(4)
+        },
       },
     },
     {
       name: "From Network",
       label: "From Network",
+      options: {
+        filter: true,
+        sort: true,
+        searchable: true,
+        customBodyRender: (value) => {
+          for (var network in networks) {
+            if (networks[network].slug == value) {
+              return networks[network].name
+            }             
+          }
+        },
+      },
     },
     {
       name: "To Network",
       label: "To Network",
+      options: {
+        filter: false,
+        sort: true,
+        searchable: true,
+        customBodyRender: (value) => {
+          for (var network in networks) {
+            if (networks[network].chainID == value) {
+              return networks[network].name
+            }
+          }
+        },
+      },
     },
     {
       name: "Status",
       label: "Status",
+      options: {
+        filter: false,
+        sort: true,
+        searchable: false,
+        customBodyRender: (value) => {
+          return (
+            <>
+              <span >{(value == true) ? <span className="badge bg-success rounded-pill">Completed</span> : <span className="badge bg-warning rounded-pill">Pending for approval</span>}</span>
+            </>
+          );
+
+        },
+      },
+    },
+    {
+      name: "statusVal",
+      label: "Status",
+      options: {
+        filter: true,
+        sort: true,
+        searchable: true,
+        display: "false",
+        customBodyRender: (value) => {
+          return value === true ? "completed" : "pending"          
+
+        },
+      },
     },
     {
       name: "TX",
       label: "TX",
+      options: {
+        filter: false,
+        searchable: true,
+        sort: false,
+        
+      },
     },
   ];
 
@@ -372,7 +444,7 @@ function BridgeComponent() {
     }
   }
 
-  function getNetworks() {   
+  function getNetworks() {
     let result = ApiCalls.getNetworks();
     result
       .then((response) => {
@@ -383,8 +455,8 @@ function BridgeComponent() {
       })
       .catch((e) => {
         console.log(e);
-      });   
-    
+      });
+
   }
 
   async function getTxStatus(hash) {
@@ -459,36 +531,36 @@ function BridgeComponent() {
             )
             .send({ from: walletAddress });
 
-        
+
           if (result) {
 
             let approveTxHash = result.transactionHash;
-         
 
-            if (fee){
+
+            if (fee) {
               let lock = await contractBridge.methods
-              .lockTokens(
-                networkTo.chainID,
-                amountFormatted.toString(),
-                approveTxHash
-              )
-              .send({ from: walletAddress, value: fee });
+                .lockTokens(
+                  networkTo.chainID,
+                  amountFormatted.toString(),
+                  approveTxHash
+                )
+                .send({ from: walletAddress, value: fee });
 
 
-            let lockTxHash = lock.transactionHash;
+              let lockTxHash = lock.transactionHash;
 
-            if (lockTxHash) {
-              setTimeout(() => {
-                getTxStatus(lockTxHash);
-                setBridgeLoader(false);
-                setAmount(0);
-              }, 10000);
+              if (lockTxHash) {
+                setTimeout(() => {
+                  getTxStatus(lockTxHash);
+                  setBridgeLoader(false);
+                  setAmount(0);
+                }, 10000);
+              }
+
+              getTokenDetails(tokenContract);
             }
 
-            getTokenDetails(tokenContract);
-            }
 
-            
           }
         }
       } catch (error) {
@@ -512,8 +584,8 @@ function BridgeComponent() {
             .send({ from: walletAddress });
 
           if (result) {
-           
-            if(fee){
+
+            if (fee) {
               let approveTxHash = result.transactionHash;
               let gas = await ApiCalls.getGasFee(networkFrom.chainID);
               gas = gas * 21000;
@@ -527,20 +599,20 @@ function BridgeComponent() {
                   approveTxHash
                 )
                 .send({ from: walletAddress, value: fee, gas: gas });
-  
+
               let returnResultHash = returnResult.transactionHash;
-  
+
               if (returnResultHash) {
                 setTimeout(() => {
                   getTxStatus(returnResultHash);
                   setBridgeLoader(false);
                   setAmount(0);
                 }, 10000);
-  
+
               }
               getTokenDetails(tokenContract);
             }
-            
+
 
           }
         } catch (error) {
@@ -638,18 +710,18 @@ function BridgeComponent() {
 
           for (let i = 0; i < allTx.length; i++) {
             tempTable.push([
-              <Moment format="D MMM YYYY - hh:mm A" key={i}>
-                {allTx[i].createdAt}
-              </Moment>,
 
-              (Web3.utils.fromWei(allTx[i].walletToBridge.amount) *
-                10 ** 10).toFixed(6),
+              // allTx[i].createdAt,
+              allTx[i].createdAt,
 
-              getNetworkName(allTx[i].walletToBridge.network),
+              allTx[i].walletToBridge.amount,
 
-              getNetworkNameFromID(allTx[i].walletToBridge.chainID),
+              allTx[i].walletToBridge.network,
 
-              <span key={i}>{(allTx[i].isCompleted == true) ? <span className="badge bg-success rounded-pill">Completed</span> : <span className="badge bg-warning rounded-pill">Pending for approval</span>}</span>,
+              allTx[i].walletToBridge.chainID,
+
+              allTx[i].isCompleted,
+              allTx[i].isCompleted,
 
               <span key={i} >{allTx[i].bridgeToWallet.transactionHash ?
                 <div className="d-flex align-items-center gap-1">

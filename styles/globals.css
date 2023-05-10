@@ -13,6 +13,9 @@ a {
   color: inherit;
   text-decoration: none;
 }
+.css-6od3lo-MuiChip-label{
+  color: #fff !important;
+}
 
 * {
   box-sizing: border-box;

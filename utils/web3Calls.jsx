@@ -9,7 +9,7 @@ const web3modalStorageKey = "WEB3_CONNECT_CACHED_PROVIDER";
 const web3Modal = typeof window !== "undefined" && new Web3Modal({ cacheProvider: true });
 const Web3 = require("web3");
 
-const LFI_TOKEN_CONTRACT_ADDRESS = "0x5c9B04a46641aB50FE9CA27429071fC4aECb4648";
+const LFI_TOKEN_CONTRACT_ADDRESS = process.env.BRIDGE_MAIN_TOKEN_ADDRESS;
 const STAKING_CONTRACT_ADDRESS = "0xf972c7ff4F7e9Fe85d0653Ec273346063b744a71";
 
 export const web3eth = new Web3(Web3.givenProvider || "https://speedy-nodes-nyc.moralis.io/8ad94db66badc20da4925893/bsc/testnet");

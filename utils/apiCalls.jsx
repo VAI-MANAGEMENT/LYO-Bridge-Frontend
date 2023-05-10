@@ -83,12 +83,12 @@ async function getGasFee(networkChainId) {
       gas = response.data.result.SafeGasPrice;
   }
 
-  if (networkChainId == 80001) {
+  if (networkChainId == 80001 || networkChainId == 137) {
       const response = await getGasPolygon();
       gas = response.data.result.SafeGasPrice;
   }
 
-  if (networkChainId == 11155111) {
+  if (networkChainId == 11155111 || networkChainId == 1) {
       const response = await getGasEth();
       gas = response.data.result.SafeGasPrice;
   }
