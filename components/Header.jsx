@@ -103,10 +103,10 @@ function Header({ currencyBalance }) {
                     {walletAddress.slice(walletAddress.length - 6)}
                   </Dropdown.Toggle>
 
-                  <Dropdown.Menu>
+                  {/* <Dropdown.Menu>
                     <h6>Balances</h6>
                     {balance ? <div>{(parseFloat(balance)).toFixed(3)} BNB</div> : ""}                            
-                  </Dropdown.Menu>
+                  </Dropdown.Menu> */}
                 </Dropdown>
               </>
             ) : (
