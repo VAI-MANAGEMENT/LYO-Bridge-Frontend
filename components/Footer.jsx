@@ -1,6 +1,6 @@
-import Logo from "../public/logo-small.png";
 import Image from "next/image";
 import { Tooltip } from "@nextui-org/react";
+import Logo from "../public/lyobridge-logo.png";
 
 const Footer = () => {
 
@@ -10,7 +10,7 @@ const Footer = () => {
       <div className="container">
         <div className="footer-row">
           <div className="logo-wrp">
-            <a href="#" className="logo"><Image src={Logo} alt="LFI" /> LYOBRIDGE</a>
+            <a href="#" className="logo"><Image src={Logo}  /> </a>
 
             <br />
 

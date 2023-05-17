@@ -33,7 +33,7 @@ export const WalletProvider = ({ children }) => {
 
   useEffect(() => {
     if (address && chainId == process.env.chain_id) {
-      getCurrencyBalance();   
+      // getCurrencyBalance();   
     }
   }, [address, currencyBalance]);
 

@@ -136,7 +136,7 @@ function BridgeComponent() {
   }, [chainId, tokenContract, tokenBalance]);
 
   useEffect(() => {
-    if (chainId != 97) {
+    if (chainId != process.env.chain_id) {
       // setTokenAddressFrom(assetList[0].childTokenAddress)
       switchNetwork();
 
@@ -168,7 +168,7 @@ function BridgeComponent() {
   async function getFee() {
 
     try {
-      if (chainId == 97) {
+      if (chainId == process.env.chain_id) {
         console.log("🚀gett fee")
         let feeAmount = await contractBridge.methods.bridgeFee().call();
         console.log("🚀 ~ file: Bridge.jsx:165 ~ getFee ~ feeAmount:", feeAmount)
@@ -520,7 +520,7 @@ function BridgeComponent() {
       useGrouping: false,
     });
 
-    if (networkFrom.chainID == 97) {
+    if (networkFrom.chainID == process.env.chain_id) {
       try {
         if (tokenContract) {
 

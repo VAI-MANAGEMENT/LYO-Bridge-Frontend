@@ -1,4 +1,4 @@
-import Logo from "../public/logo-small.png";
+import Logo from "../public/lyobridge-logo.png";
 import Image from "next/image";
 import { useContext, useState, useEffect } from "react";
 import { WalletContext } from "../context/WalletConnect";
@@ -68,7 +68,7 @@ function Header({ currencyBalance }) {
             className="navbar-brand"
             href="#"          
           >
-            <Image src={Logo} alt="LFI" /> LYOBRIDGE
+            <Image src={Logo}   alt="LYOBRIDGE" className="logo"/> 
           </a>
 
           <div>

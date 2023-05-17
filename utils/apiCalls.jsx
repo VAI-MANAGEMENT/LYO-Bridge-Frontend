@@ -78,33 +78,30 @@ const getGasPolygon = () => {
 
 async function getGasFee(networkChainId) {
   let gas; 
-  if (networkChainId == 97) {
-      const response = await getGasBsc();
-      gas = response.data.result.SafeGasPrice;
+  if (networkChainId == 97 || networkChainId == 56 ) {
+    const response = await getGasBsc();
+    gas = response.data.result.SafeGasPrice;
   }
 
-  if (networkChainId == 80001 || networkChainId == 137) {
-      const response = await getGasPolygon();
-      gas = response.data.result.SafeGasPrice;
+  if (networkChainId == 80001 || networkChainId == 137 ) {
+    const response = await getGasPolygon();
+    gas = response.data.result.SafeGasPrice;
   }
 
   if (networkChainId == 11155111 || networkChainId == 1) {
-      const response = await getGasEth();
-      gas = response.data.result.SafeGasPrice;
+    const response = await getGasEth();
+    gas = response.data.result.SafeGasPrice;
   }
 
-  if (networkChainId == 4002) {
-      const response = await getGasFantom();
-      gas = response.data.result.SafeGasPrice;
+  if (networkChainId == 4002 || networkChainId == 250) {
+    const response = await getGasFantom();
+    gas = response.data.result.SafeGasPrice;
 
   }
 
-  if (networkChainId == 43113) {
-      const response = await getGasAvalanche();
-      gas = response.data.result;
-      // const totalGas = ((21000 * parseInt(gas)) / 10 ** 9).toFixed(5);
-      // return totalGas
-
+  if (networkChainId == 43113 || networkChainId == 43114) {
+    const response = await getGasAvalanche();
+    gas = response.data.result;
   }
 
   //  totalFee = units of gas used * (base fee + priority fee)
