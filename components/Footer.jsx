@@ -11,19 +11,28 @@ const Footer = () => {
         <div className="footer-row">
           <div className="logo-wrp">
             <a href="#" className="logo"><Image src={Logo}  /> </a>
-
             <br />
 
-            <a href="mailto:info@lyobridge.io">info@lyobridge.io</a>
-          </div>
+            <div>
+              <p>Email:   <a href="mailto:support@lyotrade.com">support@lyotrade.com</a></p>
+             
+            </div>
           
-          <div className="contact-sec">            
+          </div> 
+
+          <div>
+            <h5>Help</h5>
+          <a href="https://support.lyotrade.com/" target="_blank" rel="norefferer">Contact Us</a>
+            </div>         
+          
+        </div>
+        <div className="copyright">
+         © 2023 LYOTRADE. All rights reserved.
+
+          <div className="terms">            
             <Tooltip  content="Coming Soon" trigger="hover" color="invert" placement="top"><a href="#" target="_blank" rel="noreferrer">Terms </a></Tooltip>
             <Tooltip  content="Coming Soon" trigger="hover" color="invert" placement="top"><a href="#" target="_blank" rel="noreferrer">Privacy & Cookie Policy </a></Tooltip>
           </div>
-        </div>
-        <div className="copyright text-center">
-          Copyright © 2023 LYOPAY. All rights reserved.
         </div>
       </div>
     </footer>

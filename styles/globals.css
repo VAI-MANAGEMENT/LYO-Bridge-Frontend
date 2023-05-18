@@ -56,15 +56,15 @@ h2 {
   margin-bottom: 15px;
 }
 
-.logo{
-  width: 175px;
+.navbar-brand, .logo{
+  width: 175px !important;
 }
 
 /* navbar styles */
 
 .main-header .bg-light {
   background: #1a1a1a !important;
-  padding: 8px 0px;
+  padding: 18px 0px;
 }
 
 .btn-secondary{
@@ -2014,6 +2014,28 @@ footer .copyright {
   font-size: 13px;
   border-top: 1px solid #cccccc57;
   padding: 15px 0;
+  display: flex;
+    justify-content: space-between;
+}
+.light-theme footer h5,.light-theme footer p{
+ 
+  color: #fff !important;
+}
+
+
+footer p{
+  font-size: 14px;
+  color: #fff !important;
+}
+
+
+footer a{
+  font-size: 14px;
+  color: #fff !important;
+}
+footer .terms{
+  display: flex;
+  gap: 30px;
 }
 
 .frame {
@@ -2417,9 +2439,9 @@ hr {
     flex-direction: column;
     gap: 15px;
   }
-
-  footer .logo-wrp {
-    width: 100px;
-    text-align: center;
+footer .copyright{
+  flex-wrap: wrap;
+  justify-content: center;
 }
+ 
 }
