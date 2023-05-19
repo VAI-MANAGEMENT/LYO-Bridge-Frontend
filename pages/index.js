@@ -4,6 +4,7 @@ import { useContext } from "react";
 import { WalletContext } from "../context/WalletConnect";
 import { ThemeContext } from "../context/theme";
 import BridgeComponent from "../components/Bridge";
+import Coming from "../components/Coming";
 
 export default function Home() {
   const { theme } = useContext(ThemeContext);
@@ -24,7 +25,8 @@ export default function Home() {
       <div className={`${theme}`}>
         <Header/>
         <div className="mainContainer">
-          <BridgeComponent />
+          {/* <BridgeComponent /> */}
+          <Coming/>
         </div>
         <Footer/>
 
