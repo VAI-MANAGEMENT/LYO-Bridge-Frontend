@@ -35,12 +35,12 @@ function Header({ currencyBalance }) {
     </Tooltip>
   );
 
-  useEffect(() => {
-    if (walletAddress && chainId == process.env.chain_id) {
-      getBalance();
-      getWlfiBalance();
-    }
-  }, [lfiBalance, wlfiBalance, walletAddress, chainId]);
+  // useEffect(() => {
+  //   if (walletAddress && chainId == process.env.chain_id) {
+  //     getBalance();
+  //     getWlfiBalance();
+  //   }
+  // }, [lfiBalance, wlfiBalance, walletAddress, chainId]);
 
   async function getBalance() {
     let result = await Web3Calls.getBalanceLfi(walletAddress);

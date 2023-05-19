@@ -121,19 +121,20 @@ function BridgeComponent() {
   }, [networkFrom]);
 
 
-  useEffect(() => {
+  // useEffect(() => {
+  //  if(chainId != process.env.chain_id){
+  //   getFee()
+  //  } 
 
-    getFee()
+  // }, [chainId]);
 
-  }, [chainId]);
 
-  useEffect(() => {
-    getTokenDetails(process.env.BRIDGE_MAIN_TOKEN_ADDRESS);
-  }, []);
-
-  useEffect(() => {
-    getBridgeTokenBalance()
-  }, [chainId, tokenContract, tokenBalance]);
+//   useEffect(() => {
+//     if(chainId && walletAddress){
+//  getBridgeTokenBalance()
+//     }
+   
+//   }, [chainId, tokenContract, tokenBalance]);
 
   useEffect(() => {
     if (chainId != process.env.chain_id) {
@@ -413,13 +414,13 @@ function BridgeComponent() {
         </button>
       );
     }
-    if (parseFloat(amount) >= parseFloat(bridgeTokenBalance)) {
-      return (
-        <button className="btn btn-primary mb-2" disabled>
-          Bridging this amount is currently not possible
-        </button>
-      );
-    }
+    // if (parseFloat(amount) >= parseFloat(bridgeTokenBalance)) {
+    //   return (
+    //     <button className="btn btn-primary mb-2" disabled>
+    //       Bridging this amount is currently not possible
+    //     </button>
+    //   );
+    // }
     if (!networkFrom || !networkTo) {
       return (
         <button className="btn btn-primary mb-2" disabled>
@@ -530,6 +531,7 @@ function BridgeComponent() {
               amountFormatted.toString()
             )
             .send({ from: walletAddress });
+          console.log("🚀 ~ file: Bridge.jsx:532 ~ callBridge ~ result:", result)
 
 
           if (result) {
@@ -537,14 +539,14 @@ function BridgeComponent() {
             let approveTxHash = result.transactionHash;
 
 
-            if (fee) {
+            // if (fee) {
               let lock = await contractBridge.methods
                 .lockTokens(
                   networkTo.chainID,
                   amountFormatted.toString(),
                   approveTxHash
                 )
-                .send({ from: walletAddress, value: fee });
+                .send({ from: walletAddress, value: 0 });
 
 
               let lockTxHash = lock.transactionHash;
@@ -561,7 +563,7 @@ function BridgeComponent() {
             }
 
 
-          }
+          // }
         }
       } catch (error) {
         console.log(error)
@@ -585,7 +587,7 @@ function BridgeComponent() {
 
           if (result) {
 
-            if (fee) {
+            // if (fee) {
               let approveTxHash = result.transactionHash;
               let gas = await ApiCalls.getGasFee(networkFrom.chainID);
               gas = gas * 21000;
@@ -598,7 +600,7 @@ function BridgeComponent() {
                   amountFormatted.toString(),
                   approveTxHash
                 )
-                .send({ from: walletAddress, value: fee, gas: gas });
+                .send({ from: walletAddress, value: 0 });
 
               let returnResultHash = returnResult.transactionHash;
 
@@ -614,7 +616,7 @@ function BridgeComponent() {
             }
 
 
-          }
+          // }
         } catch (error) {
           console.log(error)
           setBridgeLoader(false)

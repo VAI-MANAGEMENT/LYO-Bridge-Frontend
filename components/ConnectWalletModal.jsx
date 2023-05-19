@@ -12,11 +12,11 @@ function ConnectWalletModal({ isOpen, closeModal }) {
     <Modal show={isOpen} onHide={closeModal} isCentered>
       <Modal.Header closeButton>Select Wallet</Modal.Header>
 
-      <Modal.Body paddingBottom="1.5rem">
+      <Modal.Body>
         <div>
           <Button
             variant="outline"
-            classNmae="connectLink"
+            className="connectLink"
             onClick={() => {
               connectToWallet("coinbasewallet");
               closeModal();
@@ -28,14 +28,14 @@ function ConnectWalletModal({ isOpen, closeModal }) {
                 alt="Coinbase Wallet Logo"
                 width={25}
                 height={25}
-                borderRadius="3px"
+              
               />
               <div>Coinbase Wallet</div>
             </div>
           </Button>
           <Button
             variant="outline"
-            classNmae="connectLink"
+            className="connectLink"
             onClick={() => {
               connectToWallet("walletconnect");
               closeModal();
@@ -47,14 +47,14 @@ function ConnectWalletModal({ isOpen, closeModal }) {
                 alt="Wallet Connect Logo"
                 width={26}
                 height={26}
-                borderRadius="3px"
+             
               />
               <div>Wallet Connect</div>
             </div>
           </Button>
           <Button
             variant="outline"
-            classNmae="connectLink"
+            className="connectLink"
             onClick={() => {
               connectToWallet("injected");
               closeModal();

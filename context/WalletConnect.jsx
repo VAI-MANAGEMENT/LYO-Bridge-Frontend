@@ -105,11 +105,17 @@ export const WalletProvider = ({ children }) => {
   };
 
   const getBalance = async (provider, walletAddress) => {
-    const walletBalance = await provider.getBalance(walletAddress);
+    try {
+      const walletBalance = await provider.getBalance(walletAddress);
    
     const balanceInEth = ethers.utils.formatEther(walletBalance);
    
     setBalance(balanceInEth);
+    } catch (error) {
+      console.log(error)
+      
+    }
+    
   };
 
   const disconnectWallet = () => {
@@ -131,7 +137,6 @@ export const WalletProvider = ({ children }) => {
     // console.log("clicked")
     try {
       setLoading(true);
-
       checkIfExtensionIsAvailable(userProvider);
       const connection =
         web3Modal && (userProvider ? await web3Modal.connectTo(userProvider) : await web3Modal.connect());
