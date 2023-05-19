@@ -22,7 +22,7 @@ const Footer = () => {
 
           <div>
             <h5>Help</h5>
-          <a href="https://support.lyotrade.com/" target="_blank" rel="norefferer">Contact Us</a>
+          <a href="https://support.lyotrade.com/" target="_blank" rel="noreferrer">Contact Us</a>
             </div>         
           
         </div>
@@ -30,8 +30,8 @@ const Footer = () => {
          © 2023 LYOTRADE. All rights reserved.
 
           <div className="terms">            
-            <Tooltip  content="Coming Soon" trigger="hover" color="invert" placement="top"><a href="#" target="_blank" rel="noreferrer">Terms </a></Tooltip>
-            <Tooltip  content="Coming Soon" trigger="hover" color="invert" placement="top"><a href="#" target="_blank" rel="noreferrer">Privacy & Cookie Policy </a></Tooltip>
+            <a href="https://docs.bridge.lyotrade.com/terms/terms-of-use" target="_blank" rel="noreferrer">Terms </a>
+            <a href="https://docs.bridge.lyotrade.com/terms/privacy-policy-and-cookies-policy" target="_blank" rel="noreferrer">Privacy & Cookie Policy </a>
           </div>
         </div>
       </div>
