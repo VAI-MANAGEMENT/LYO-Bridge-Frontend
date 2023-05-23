@@ -1693,7 +1693,12 @@ color: rgba(39,98,255,1) !important;
 .connectLink{
   color: #000;
 }
-
+.note{
+  font-size: 13px;
+  margin: 20px 0;
+  font-weight: 100;
+  color: #9cc0d9;
+}
 .connectLink:hover{
   color: #000 !important;
 }

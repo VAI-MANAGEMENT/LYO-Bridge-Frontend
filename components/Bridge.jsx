@@ -120,13 +120,17 @@ function BridgeComponent() {
     // getBridgeTokenBalance(networkFrom)
   }, [networkFrom]);
 
+  useEffect(() => {  
+    getBridgeTokenBalance(networkTo)
+  }, [networkTo]);
 
-  // useEffect(() => {
-  //  if(chainId != process.env.chain_id){
-  //   getFee()
-  //  } 
 
-  // }, [chainId]);
+  useEffect(() => {
+   if(chainId != process.env.chain_id){
+    getFee()
+   } 
+
+  }, [chainId]);
 
 
 //   useEffect(() => {
@@ -198,24 +202,26 @@ function BridgeComponent() {
   }
 
   async function getBridgeTokenBalance() {
+  
     try {
-      if (networkFrom) {
-
-        const contract = new web3eth.eth.Contract(tokenABI, networkFrom.childTokenAddress);
-        let tokenBal = await contract.methods.balanceOf(networkFrom.bridgeAddress).call({ from: networkFrom.bridgeAddress });
+      if (networkTo) {
+        const web3eth = new Web3(
+          Web3.givenProvider || networkTo.wsUrl);
+        const contract = new web3eth.eth.Contract(tokenABI, networkTo.childTokenAddress);
+        let tokenBal = await contract.methods.balanceOf(networkTo.bridgeAddress).call({ from: networkTo.bridgeAddress });
         tokenBal = tokenBal / 10 ** tokenDecimals
         setBridgeTokenBalance(tokenBal)
         console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
       }
-      else {
-        if (tokenContract) {
-          let tokenBal = await tokenContract.methods.balanceOf(process.env.MAIN_BRIDGE_ADDRESS).call({ from: process.env.MAIN_BRIDGE_ADDRESS });
-          tokenBal = tokenBal / 10 ** tokenDecimals
-          setBridgeTokenBalance(tokenBal)
-          console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
-        }
+      // else {
+      //   if (tokenContract) {
+      //     let tokenBal = await tokenContract.methods.balanceOf(process.env.MAIN_BRIDGE_ADDRESS).call({ from: process.env.MAIN_BRIDGE_ADDRESS });
+      //     tokenBal = tokenBal / 10 ** tokenDecimals
+      //     setBridgeTokenBalance(tokenBal)
+      //     console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
+      //   }
 
-      }
+      // }
     } catch (error) {
       console.log("🚀 ~ file: Bridge.jsx:213 ~ getBridgeTokenBalance ~ error:", error)
 
@@ -266,6 +272,7 @@ function BridgeComponent() {
     }
 
   }
+
   const datatableOptions = {
     filterType: "dropdown",
     selectableRows: false,
@@ -342,11 +349,7 @@ function BridgeComponent() {
         sort: true,
         searchable: false,
         customBodyRender: (value) => {
-          return (
-            <>
-              <span >{(value == true) ? <span className="badge bg-success rounded-pill">Completed</span> : <span className="badge bg-warning rounded-pill">Pending for approval</span>}</span>
-            </>
-          );
+          return renderStatus(value)        
 
         },
       },
@@ -376,6 +379,34 @@ function BridgeComponent() {
       },
     },
   ];
+
+  const renderStatus = (item) => {      
+    if(item.isCompleted == false && item.isProcessing == true){
+        return (
+            <>
+             <span className="badge bg-warning rounded-pill">Processing</span>             
+            </>          
+        )
+    }
+    if(item.isCompleted == false && item.isProcessing == false){
+      return (
+          <>
+           <span className="badge bg-warning rounded-pill">Pending  for Approval</span>             
+          </>          
+      )
+  }
+    if(item.isCompleted == true && item.isApproved == true){
+        return (
+          <span className="badge bg-success rounded-pill">Completed</span>
+        )
+    }
+    if(item.isCompleted == true && item.isRejected == true){
+        return (
+            <span className="badge bg-danger rounded-pill">Rejected</span>
+        )
+    }
+
+}
 
   function getAmount(e) {
     setAmount(e);
@@ -600,7 +631,7 @@ function BridgeComponent() {
                   amountFormatted.toString(),
                   approveTxHash
                 )
-                .send({ from: walletAddress, value: 0 });
+                .send({ from: walletAddress, value: 0});
 
               let returnResultHash = returnResult.transactionHash;
 
@@ -722,8 +753,8 @@ function BridgeComponent() {
 
               allTx[i].walletToBridge.chainID,
 
-              allTx[i].isCompleted,
-              allTx[i].isCompleted,
+              allTx[i],
+              allTx[i],
 
               <span key={i} >{allTx[i].bridgeToWallet.transactionHash ?
                 <div className="d-flex align-items-center gap-1">
@@ -750,14 +781,24 @@ function BridgeComponent() {
                       <CgCopy />
                     </Tooltip>
                   </CopyToClipboard>
-                  <a
-                    href={getBlockExploreLink(allTx[i].walletToBridge.chainID) + "/tx/" + allTx[i].bridgeToWallet.transactionHash}
+                  {allTx[i].isRejected == true ?  <a
+                    href={getBlockExploreLink(allTx[i].walletToBridge.fromChainID) + "tx/" + allTx[i].bridgeToWallet.transactionHash}
                     target="_blank"
                     rel="noreferrer"
                     className="link"
                   >
                     <BsArrowUpRightSquare />
                   </a>
+                  :
+                  <a
+                  href={getBlockExploreLink(allTx[i].walletToBridge.chainID) + "/tx/" + allTx[i].bridgeToWallet.transactionHash}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="link"
+                >
+                  <BsArrowUpRightSquare />
+                </a>}
+                 
                 </div>
                 : "Not available"}</span>
             ]);
@@ -836,7 +877,7 @@ function BridgeComponent() {
                   modalActive={false}
                 />
 
-                <div className="d-flex justify-content-between info-wrp mt-5">
+                {/* <div className="d-flex justify-content-between info-wrp mt-5">
                   <div className="d-flex justify-content-between align-items-center gap-2">
                     You will recieve
                   </div>
@@ -848,10 +889,16 @@ function BridgeComponent() {
                     {amount} {assetList[0].name}
                     <RiArrowDownSLine />
                   </div>
-                </div>
+                </div> */}
 
-                <Collapse in={open}>
+              
                   <div id="example-collapse-text" className="mb-4">
+                  {amount && assetList ?
+                      <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
+                        <span>You will recieve</span>
+                        <span>  {amount} {assetList[0].name}</span>
+                      </div>
+                      : ""}
                     {gasOnDestination ? (
                       <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
                         <span>Gas on Destination</span>
@@ -862,16 +909,18 @@ function BridgeComponent() {
                     ) : (
                       ""
                     )}
-                    {fee && networkFrom ?
+                    {/* {fee && networkFrom ?
                       <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
                         <span>Fee</span>
                         <span>{(parseFloat(fee)) / 10 ** 18} {networkFrom.symbol}</span>
                       </div>
-                      : ""}
+                      : ""} */}
                   </div>
-                </Collapse>
+              
 
                 <div className="btn-wrp">{renderActionButton()}</div>
+
+                <p className="note">* Please note that avarage transaction processing time is 24 hours.</p>
 
 
               </div>

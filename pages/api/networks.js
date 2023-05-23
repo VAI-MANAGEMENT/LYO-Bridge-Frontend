@@ -12,6 +12,7 @@ export default async function handler(req, res) {
        
         res.status(200).json(result.data)
     } catch (error) {       
+        console.log("🚀 ~ file: networks.js:15 ~ handler ~ error:", error)
         res.status(200).json({ 'status': 400, mssg: 'An Error Occured' })
     }
 }

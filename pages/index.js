@@ -25,8 +25,8 @@ export default function Home() {
       <div className={`${theme}`}>
         <Header/>
         <div className="mainContainer">
-          {/* <BridgeComponent /> */}
-          <Coming/>
+          <BridgeComponent />
+          {/* <Coming/> */}
         </div>
         <Footer/>
 
