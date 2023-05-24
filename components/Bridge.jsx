@@ -263,7 +263,8 @@ function BridgeComponent() {
           tokenContract,
           walletAddress
         );
-        balance = (balance / 10 ** decimals).toFixed(2);
+        balance = (balance / 10 ** decimals).toFixed(4);
+        console.log("🚀 ~ file: Bridge.jsx:267 ~ getTokenDetails ~ balance:", balance)
         setTokenBalance(balance);
       }
 
@@ -438,7 +439,7 @@ function BridgeComponent() {
       );
     }
 
-    if (parseFloat(amount) >= parseFloat(tokenBalance)) {
+    if (parseFloat(amount) > parseFloat(tokenBalance)) {
       return (
         <button className="btn btn-primary mb-2" disabled>
           Insufficient balance
