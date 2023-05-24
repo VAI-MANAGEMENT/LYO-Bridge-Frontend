@@ -172,6 +172,13 @@ const InputComponent = ({
     checkImportDisabled();
   }, [tokenSearched, show]);
 
+  function handleInput(val){
+    let with2Decimals = balance * val
+     with2Decimals = with2Decimals.toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]
+     with2Decimals = parseFloat(with2Decimals)
+    setInputAmount(with2Decimals)
+  }
+
   return (
     <div className="input-wrp">
       <div className="top-row">
@@ -239,7 +246,7 @@ const InputComponent = ({
             <span
               className="addMax"
               onClick={(e) => {
-                setInputAmount(balance * 0.25);
+                handleInput(0.25);
               }}
             >
               25%
@@ -247,7 +254,7 @@ const InputComponent = ({
             <span
               className="addMax"
               onClick={(e) => {
-                setInputAmount(balance * 0.5);
+                handleInput(0.5);
               }}
             >
               50%
@@ -255,7 +262,7 @@ const InputComponent = ({
             <span
               className="addMax"
               onClick={(e) => {
-                setInputAmount(balance * 0.75);
+                handleInput(0.75);
               }}
             >
               75%

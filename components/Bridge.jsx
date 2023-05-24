@@ -271,7 +271,9 @@ function BridgeComponent() {
           tokenContract,
           walletAddress
         );
-        balance = (balance / 10 ** decimals).toFixed(4);       
+        balance = (balance / 10 ** decimals);
+        balance = balance.toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]
+        balance = parseFloat(balance)   
         setTokenBalance(balance);
       }
 
