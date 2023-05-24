@@ -59,7 +59,7 @@ function BridgeComponent() {
   const [fee, setFee] = useState();
   const [sideBridgeContractFrom, setSideBridgeContractFrom] = useState();
 
-  
+
   const alert = useAlert();
   const { walletAddress, chainId, switchNetwork } = useContext(WalletContext);
   const web3eth = new Web3(
@@ -107,14 +107,14 @@ function BridgeComponent() {
   useEffect(() => {
     if (tokenContract) {
       getTokenDetails(tokenContract);
-     
+
     }
   }, [tokenContract]);
 
   useEffect(() => {
-   
-      console.log("tokenBalance",tokenBalance)
-  
+
+    console.log("tokenBalance", tokenBalance)
+
   }, [tokenBalance]);
 
 
@@ -124,9 +124,7 @@ function BridgeComponent() {
 
   }, [networkFrom]);
 
-  // useEffect(() => {
-  //   getBridgeTokenBalance();
-  // }, [amount]);
+
 
   useEffect(() => {
 
@@ -134,9 +132,13 @@ function BridgeComponent() {
     // getBridgeTokenBalance(networkFrom)
   }, [networkFrom]);
 
-  useEffect(() => {  
-    getBridgeTokenBalance(networkTo)
-  }, [networkTo]);
+  useEffect(() => {
+    if (networkFrom) {
+      getBridgeTokenBalance()
+      console.log(bridgeTokenBalance)
+    }
+
+  }, [networkFrom, chainId,bridgeTokenBalance,walletAddress]);
 
 
   // useEffect(() => {
@@ -147,12 +149,12 @@ function BridgeComponent() {
   // }, [chainId]);
 
 
-//   useEffect(() => {
-//     if(chainId && walletAddress){
-//  getBridgeTokenBalance()
-//     }
-   
-//   }, [chainId, tokenContract, tokenBalance]);
+  //   useEffect(() => {
+  //     if(chainId && walletAddress){
+  //  getBridgeTokenBalance()
+  //     }
+
+  //   }, [chainId, tokenContract, tokenBalance]);
 
   useEffect(() => {
     if (chainId != process.env.chain_id) {
@@ -187,17 +189,17 @@ function BridgeComponent() {
   async function getFee() {
 
     try {
-      if (chainId == process.env.chain_id) {       
-        let feeAmount = await contractBridge.methods.bridgeFee().call();       
+      if (chainId == process.env.chain_id) {
+        let feeAmount = await contractBridge.methods.bridgeFee().call();
         setFee(feeAmount)
         return feeAmount
 
       }
       else {
 
-        const contract = new web3eth.eth.Contract(sideBridgeABI, networkFrom.bridgeAddress);     
+        const contract = new web3eth.eth.Contract(sideBridgeABI, networkFrom.bridgeAddress);
 
-        let feeAmount = await contract.methods.bridgeFee().call();       
+        let feeAmount = await contract.methods.bridgeFee().call();
         setFee(feeAmount)
         return feeAmount
 
@@ -212,25 +214,25 @@ function BridgeComponent() {
   }
 
   async function getBridgeTokenBalance() {
-  
     try {
-      if (networkTo) {
-        const web3eth = new Web3(
-          Web3.givenProvider || networkTo.wsUrl);
-        const contract = new web3eth.eth.Contract(tokenABI, networkTo.childTokenAddress);
-        let tokenBal = await contract.methods.balanceOf(networkTo.bridgeAddress).call({ from: networkTo.bridgeAddress });
-        tokenBal = tokenBal / 10 ** tokenDecimals
-        setBridgeTokenBalance(tokenBal)      
-      }
-      // else {
-      //   if (tokenContract) {
-      //     let tokenBal = await tokenContract.methods.balanceOf(process.env.MAIN_BRIDGE_ADDRESS).call({ from: process.env.MAIN_BRIDGE_ADDRESS });
-      //     tokenBal = tokenBal / 10 ** tokenDecimals
-      //     setBridgeTokenBalance(tokenBal)
-      //     console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
-      //   }
+      if(networkFrom.chainID === process.env.chain_id){
+        const contract = new web3eth.eth.Contract(bridgeABI,process.env.MAIN_BRIDGE_ADDRESS);
 
-      // }
+        let totalLockedAmount = await contract.methods.totalLockedAmount().call()
+  
+        totalLockedAmount = totalLockedAmount / 10 ** 8
+        console.log("🚀 ~ file: Bridge.jsx:224 ~ getBridgeTokenBalance ~ totalLockedAmount:", totalLockedAmount)
+        setBridgeTokenBalance(totalLockedAmount)
+      
+      }
+      else{
+        let totalLockedAmount = await sideBridgeContractFrom.methods.totalLockedAmount().call();
+        totalLockedAmount = totalLockedAmount / 10 ** 8
+        setBridgeTokenBalance(totalLockedAmount)
+     
+      }
+      
+
     } catch (error) {
       console.log(error)
 
@@ -245,7 +247,7 @@ function BridgeComponent() {
   function getSideBridgeContract() {
 
     if (networkFrom && networkFrom.bridgeAddress) {
-      try {       
+      try {
         const contract = new web3eth.eth.Contract(sideBridgeABI, networkFrom.bridgeAddress);
         setSideBridgeContractFrom(contract);
 
@@ -273,7 +275,7 @@ function BridgeComponent() {
         );
         balance = (balance / 10 ** decimals);
         balance = balance.toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]
-        balance = parseFloat(balance)   
+        balance = parseFloat(balance)
         setTokenBalance(balance);
       }
 
@@ -302,8 +304,8 @@ function BridgeComponent() {
         filter: false,
         sort: true,
         customBodyRender: (value) => {
-          return moment(value).format("D MMM YYYY - hh:mm A")           
-        
+          return moment(value).format("D MMM YYYY - hh:mm A")
+
         },
       },
     },
@@ -330,7 +332,7 @@ function BridgeComponent() {
           for (var network in networks) {
             if (networks[network].slug == value) {
               return networks[network].name
-            }             
+            }
           }
         },
       },
@@ -359,7 +361,7 @@ function BridgeComponent() {
         sort: true,
         searchable: false,
         customBodyRender: (value) => {
-          return renderStatus(value)        
+          return renderStatus(value)
 
         },
       },
@@ -374,7 +376,7 @@ function BridgeComponent() {
         searchable: true,
         display: "excluded",
         customBodyRender: (value) => {
-          return rendrenderFilterStatus(value)         
+          return rendrenderFilterStatus(value)
 
         },
       },
@@ -386,54 +388,54 @@ function BridgeComponent() {
         filter: false,
         searchable: true,
         sort: false,
-        
+
       },
     },
   ];
 
-  const renderStatus = (item) => {      
-    if(item.isCompleted == false && item.isProcessing == true){
-        return (
-            <>
-             <span className="badge bg-warning rounded-pill">Processing</span>             
-            </>          
-        )
-    }
-    if(item.isCompleted == false && item.isProcessing == false){
+  const renderStatus = (item) => {
+    if (item.isCompleted == false && item.isProcessing == true) {
       return (
-          <>
-           <span className="badge bg-warning rounded-pill">Pending  for Approval</span>             
-          </>          
+        <>
+          <span className="badge bg-warning rounded-pill">Processing</span>
+        </>
       )
-  }
-    if(item.isCompleted == true && item.isApproved == true){
-        return (
-          <span className="badge bg-success rounded-pill">Completed</span>
-        )
     }
-    if(item.isCompleted == true && item.isRejected == true){
-        return (
-            <span className="badge bg-danger rounded-pill">Rejected</span>
-        )
+    if (item.isCompleted == false && item.isProcessing == false) {
+      return (
+        <>
+          <span className="badge bg-warning rounded-pill">Pending  for Approval</span>
+        </>
+      )
+    }
+    if (item.isCompleted == true && item.isApproved == true) {
+      return (
+        <span className="badge bg-success rounded-pill">Completed</span>
+      )
+    }
+    if (item.isCompleted == true && item.isRejected == true) {
+      return (
+        <span className="badge bg-danger rounded-pill">Rejected</span>
+      )
     }
 
-}
+  }
 
-const rendrenderFilterStatus = (item) => {      
-  if(item.isCompleted == false && item.isProcessing == true){     
-      return "Processing"      
-  }
-  if(item.isCompleted == false && item.isProcessing == false){
-        return "Pending  for Approval"
-}
-  if(item.isCompleted == true && item.isApproved == true){
-         return "Completed"
-  }
-  if(item.isCompleted == true && item.isRejected == true){   
+  const rendrenderFilterStatus = (item) => {
+    if (item.isCompleted == false && item.isProcessing == true) {
+      return "Processing"
+    }
+    if (item.isCompleted == false && item.isProcessing == false) {
+      return "Pending  for Approval"
+    }
+    if (item.isCompleted == true && item.isApproved == true) {
+      return "Completed"
+    }
+    if (item.isCompleted == true && item.isRejected == true) {
       return "Rejected"
-  }
+    }
 
-}
+  }
 
   function getAmount(e) {
     setAmount(e);
@@ -472,13 +474,13 @@ const rendrenderFilterStatus = (item) => {
         </button>
       );
     }
-    // if (parseFloat(amount) >= parseFloat(bridgeTokenBalance)) {
-    //   return (
-    //     <button className="btn btn-primary mb-2" disabled>
-    //       Bridging this amount is currently not possible
-    //     </button>
-    //   );
-    // }
+    if (parseFloat(amount) >= parseFloat(bridgeTokenBalance)) {
+      return (
+        <button className="btn btn-primary mb-2" disabled>
+          Bridging this amount is currently not possible
+        </button>
+      );
+    }
     if (!networkFrom || !networkTo) {
       return (
         <button className="btn btn-primary mb-2" disabled>
@@ -589,7 +591,7 @@ const rendrenderFilterStatus = (item) => {
               process.env.MAIN_BRIDGE_ADDRESS,
               amountFormatted.toString()
             )
-            .send({ from: walletAddress });        
+            .send({ from: walletAddress });
 
 
           if (result) {
@@ -598,27 +600,27 @@ const rendrenderFilterStatus = (item) => {
 
 
             // if (fee) {
-              let lock = await contractBridge.methods
-                .lockTokens(
-                  networkTo.chainID,
-                  amountFormatted.toString(),
-                  approveTxHash
-                )
-                .send({ from: walletAddress, value: 0 });
+            let lock = await contractBridge.methods
+              .lockTokens(
+                networkTo.chainID,
+                amountFormatted.toString(),
+                approveTxHash
+              )
+              .send({ from: walletAddress, value: 0 });
 
 
-              let lockTxHash = lock.transactionHash;
+            let lockTxHash = lock.transactionHash;
 
-              if (lockTxHash) {
-                setTimeout(() => {
-                  getTxStatus(lockTxHash);
-                  setBridgeLoader(false);
-                  setAmount(0);
-                }, 10000);
-              }
-
-              getTokenDetails(tokenContract);
+            if (lockTxHash) {
+              setTimeout(() => {
+                getTxStatus(lockTxHash);
+                setBridgeLoader(false);
+                setAmount(0);
+              }, 10000);
             }
+
+            getTokenDetails(tokenContract);
+          }
 
 
           // }
@@ -646,31 +648,31 @@ const rendrenderFilterStatus = (item) => {
           if (result) {
 
             // if (fee) {
-              let approveTxHash = result.transactionHash;
-              let gas = await ApiCalls.getGasFee(networkFrom.chainID);
-              gas = gas * 21000;
-              gas = parseInt(gas + (gas * 0.2))            
-              let returnResult = await sideBridgeContractFrom.methods
-                .returnTokens(
-                  walletAddress,
-                  networkTo.chainID,
-                  amountFormatted.toString(),
-                  approveTxHash
-                )
-                .send({ from: walletAddress, value: 0});
+            let approveTxHash = result.transactionHash;
+            let gas = await ApiCalls.getGasFee(networkFrom.chainID);
+            gas = gas * 21000;
+            gas = parseInt(gas + (gas * 0.2))
+            let returnResult = await sideBridgeContractFrom.methods
+              .returnTokens(
+                walletAddress,
+                networkTo.chainID,
+                amountFormatted.toString(),
+                approveTxHash
+              )
+              .send({ from: walletAddress, value: 0 });
 
-              let returnResultHash = returnResult.transactionHash;
+            let returnResultHash = returnResult.transactionHash;
 
-              if (returnResultHash) {
-                setTimeout(() => {
-                  getTxStatus(returnResultHash);
-                  setBridgeLoader(false);
-                  setAmount(0);
-                }, 10000);
+            if (returnResultHash) {
+              setTimeout(() => {
+                getTxStatus(returnResultHash);
+                setBridgeLoader(false);
+                setAmount(0);
+              }, 10000);
 
-              }
-              getTokenDetails(tokenContract);
             }
+            getTokenDetails(tokenContract);
+          }
 
 
           // }
@@ -807,7 +809,7 @@ const rendrenderFilterStatus = (item) => {
                       <CgCopy />
                     </Tooltip>
                   </CopyToClipboard>
-                  {allTx[i].isRejected == true ?  <a
+                  {allTx[i].isRejected == true ? <a
                     href={getBlockExploreLink(allTx[i].walletToBridge.fromChainID) + "tx/" + allTx[i].bridgeToWallet.transactionHash}
                     target="_blank"
                     rel="noreferrer"
@@ -815,16 +817,16 @@ const rendrenderFilterStatus = (item) => {
                   >
                     <BsArrowUpRightSquare />
                   </a>
-                  :
-                  <a
-                  href={getBlockExploreLink(allTx[i].walletToBridge.chainID) + "/tx/" + allTx[i].bridgeToWallet.transactionHash}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="link"
-                >
-                  <BsArrowUpRightSquare />
-                </a>}
-                 
+                    :
+                    <a
+                      href={getBlockExploreLink(allTx[i].walletToBridge.chainID) + "/tx/" + allTx[i].bridgeToWallet.transactionHash}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="link"
+                    >
+                      <BsArrowUpRightSquare />
+                    </a>}
+
                 </div>
                 : "Not available"}</span>
             ]);
@@ -917,32 +919,32 @@ const rendrenderFilterStatus = (item) => {
                   </div>
                 </div> */}
 
-              
-                  <div id="example-collapse-text" className="mb-4 mt-5">
+
+                <div id="example-collapse-text" className="mb-4 mt-5">
                   {amount && assetList ?
-                      <div className="info-wrp text-right">
-                        <span>You will recieve - </span>
-                        <span>  {amount} {assetList[0].name}</span>
-                      </div>
-                      : ""}
-                    {gasOnDestination ? (
-                      <div className="info-wrp text-right">
-                        <span>Gas on Destination - </span>
-                        <span>
-                          {gasOnDestination} {networkTo.symbol}
-                        </span>
-                      </div>
-                    ) : (
-                      ""
-                    )}
-                    {/* {fee && networkFrom ?
+                    <div className="info-wrp text-right">
+                      <span>You will recieve - </span>
+                      <span>  {amount} {assetList[0].name}</span>
+                    </div>
+                    : ""}
+                  {gasOnDestination ? (
+                    <div className="info-wrp text-right">
+                      <span>Gas on Destination - </span>
+                      <span>
+                        {gasOnDestination} {networkTo.symbol}
+                      </span>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+                  {/* {fee && networkFrom ?
                       <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
                         <span>Fee</span>
                         <span>{(parseFloat(fee)) / 10 ** 18} {networkFrom.symbol}</span>
                       </div>
                       : ""} */}
-                  </div>
-              
+                </div>
+
 
                 <div className="btn-wrp">{renderActionButton()}</div>
 
@@ -952,6 +954,16 @@ const rendrenderFilterStatus = (item) => {
               </div>
             </div>
             <div className="col-lg-4">
+              {bridgeTokenBalance ? (
+                <div className="card-container mb-3">
+                  <h3>Maximum Bridge Volume</h3>
+
+                  {bridgeTokenBalance} LYO
+
+                </div>
+              ) : (
+                ""
+              )}
               <TokenInfo />
 
               {walletAddress && txData && txData.length > 0 ? (
