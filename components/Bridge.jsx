@@ -549,6 +549,7 @@ const rendrenderFilterStatus = (item) => {
             timeout: 5000,
           }
         );
+        getTransactions();
       }
 
     }
