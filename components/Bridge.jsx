@@ -173,21 +173,17 @@ function BridgeComponent() {
   async function getFee() {
 
     try {
-      if (chainId == process.env.chain_id) {
-        console.log("🚀gett fee")
-        let feeAmount = await contractBridge.methods.bridgeFee().call();
-        console.log("🚀 ~ file: Bridge.jsx:165 ~ getFee ~ feeAmount:", feeAmount)
+      if (chainId == process.env.chain_id) {       
+        let feeAmount = await contractBridge.methods.bridgeFee().call();       
         setFee(feeAmount)
         return feeAmount
 
       }
       else {
 
-        const contract = new web3eth.eth.Contract(sideBridgeABI, networkFrom.bridgeAddress);
-        console.log("🚀 ~ file: Bridge.jsx:169 ~ getFee ~ contract:", contract)
+        const contract = new web3eth.eth.Contract(sideBridgeABI, networkFrom.bridgeAddress);     
 
-        let feeAmount = await contract.methods.bridgeFee().call();
-        console.log("🚀 ~ file: Bridge.jsx:172 ~ getFee ~ feeAmount:", feeAmount)
+        let feeAmount = await contract.methods.bridgeFee().call();       
         setFee(feeAmount)
         return feeAmount
 
@@ -195,7 +191,7 @@ function BridgeComponent() {
 
 
     } catch (error) {
-      console.log("🚀 ~ file: Bridge.jsx:181 ~ getFee ~ error:", error)
+      console.log(error)
 
     }
 
@@ -210,8 +206,7 @@ function BridgeComponent() {
         const contract = new web3eth.eth.Contract(tokenABI, networkTo.childTokenAddress);
         let tokenBal = await contract.methods.balanceOf(networkTo.bridgeAddress).call({ from: networkTo.bridgeAddress });
         tokenBal = tokenBal / 10 ** tokenDecimals
-        setBridgeTokenBalance(tokenBal)
-        console.log("🚀 ~ file: Bridge.jsx:155 ~ getBridgeTokenBalance ~ tokenBal:", tokenBal)
+        setBridgeTokenBalance(tokenBal)      
       }
       // else {
       //   if (tokenContract) {
@@ -223,7 +218,7 @@ function BridgeComponent() {
 
       // }
     } catch (error) {
-      console.log("🚀 ~ file: Bridge.jsx:213 ~ getBridgeTokenBalance ~ error:", error)
+      console.log(error)
 
     }
 
@@ -236,8 +231,7 @@ function BridgeComponent() {
   function getSideBridgeContract() {
 
     if (networkFrom && networkFrom.bridgeAddress) {
-      try {
-        console.log("🚀 ~ file: Bridge.jsx:172 ~ getSideBridgeContract ~ networkFrom.bridgeAddress:", networkFrom.bridgeAddress)
+      try {       
         const contract = new web3eth.eth.Contract(sideBridgeABI, networkFrom.bridgeAddress);
         setSideBridgeContractFrom(contract);
 
@@ -263,8 +257,7 @@ function BridgeComponent() {
           tokenContract,
           walletAddress
         );
-        balance = (balance / 10 ** decimals).toFixed(4);
-        console.log("🚀 ~ file: Bridge.jsx:267 ~ getTokenDetails ~ balance:", balance)
+        balance = (balance / 10 ** decimals).toFixed(4);       
         setTokenBalance(balance);
       }
 
@@ -579,8 +572,7 @@ const rendrenderFilterStatus = (item) => {
               process.env.MAIN_BRIDGE_ADDRESS,
               amountFormatted.toString()
             )
-            .send({ from: walletAddress });
-          console.log("🚀 ~ file: Bridge.jsx:532 ~ callBridge ~ result:", result)
+            .send({ from: walletAddress });        
 
 
           if (result) {
@@ -640,8 +632,7 @@ const rendrenderFilterStatus = (item) => {
               let approveTxHash = result.transactionHash;
               let gas = await ApiCalls.getGasFee(networkFrom.chainID);
               gas = gas * 21000;
-              gas = parseInt(gas + (gas * 0.2))
-              console.log("🚀 ~ file: Bridge.jsx:480 ~ callBridge ~ gasFormatted:", gas)
+              gas = parseInt(gas + (gas * 0.2))            
               let returnResult = await sideBridgeContractFrom.methods
                 .returnTokens(
                   walletAddress,
