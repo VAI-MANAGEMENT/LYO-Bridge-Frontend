@@ -1715,10 +1715,10 @@ color: rgba(39,98,255,1) !important;
 .css-mnn31{
   color: #fff !important;
 }
-.MuiList-root li:nth-child(2) {
-  /* Attribute has this exact value */
+/* .MuiList-root li:nth-child(2) {
+
   display: none !important;
-}
+} */
 .mainContainer .custom-padding{
   padding: 0 5% !important;
 }

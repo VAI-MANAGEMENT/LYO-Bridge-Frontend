@@ -59,7 +59,7 @@ function BridgeComponent() {
   const [fee, setFee] = useState();
   const [sideBridgeContractFrom, setSideBridgeContractFrom] = useState();
 
-
+  
   const alert = useAlert();
   const { walletAddress, chainId, switchNetwork } = useContext(WalletContext);
   const web3eth = new Web3(
@@ -104,6 +104,20 @@ function BridgeComponent() {
     }
   }, [networkTo]);
 
+  useEffect(() => {
+    if (tokenContract) {
+      getTokenDetails(tokenContract);
+     
+    }
+  }, [tokenContract]);
+
+  useEffect(() => {
+   
+      console.log("tokenBalance",tokenBalance)
+  
+  }, [tokenBalance]);
+
+
 
   useEffect(() => {
     changeNetwork();
@@ -125,12 +139,12 @@ function BridgeComponent() {
   }, [networkTo]);
 
 
-  useEffect(() => {
-   if(chainId != process.env.chain_id){
-    getFee()
-   } 
+  // useEffect(() => {
+  //  if(chainId != process.env.chain_id){
+  //   getFee()
+  //  } 
 
-  }, [chainId]);
+  // }, [chainId]);
 
 
 //   useEffect(() => {
