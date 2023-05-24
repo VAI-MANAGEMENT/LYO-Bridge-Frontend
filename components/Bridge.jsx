@@ -358,13 +358,14 @@ function BridgeComponent() {
     {
       name: "statusVal",
       label: "Status",
+      hide: true,
       options: {
         filter: true,
         sort: true,
         searchable: true,
-        display: "false",
+        display: "excluded",
         customBodyRender: (value) => {
-          return value === true ? "completed" : "pending"          
+          return rendrenderFilterStatus(value)         
 
         },
       },
@@ -406,6 +407,22 @@ function BridgeComponent() {
             <span className="badge bg-danger rounded-pill">Rejected</span>
         )
     }
+
+}
+
+const rendrenderFilterStatus = (item) => {      
+  if(item.isCompleted == false && item.isProcessing == true){     
+      return "Processing"      
+  }
+  if(item.isCompleted == false && item.isProcessing == false){
+        return "Pending  for Approval"
+}
+  if(item.isCompleted == true && item.isApproved == true){
+         return "Completed"
+  }
+  if(item.isCompleted == true && item.isRejected == true){   
+      return "Rejected"
+  }
 
 }
 
@@ -893,16 +910,16 @@ function BridgeComponent() {
                 </div> */}
 
               
-                  <div id="example-collapse-text" className="mb-4">
+                  <div id="example-collapse-text" className="mb-4 mt-5">
                   {amount && assetList ?
-                      <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
-                        <span>You will recieve</span>
+                      <div className="info-wrp text-right">
+                        <span>You will recieve - </span>
                         <span>  {amount} {assetList[0].name}</span>
                       </div>
                       : ""}
                     {gasOnDestination ? (
-                      <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
-                        <span>Gas on Destination</span>
+                      <div className="info-wrp text-right">
+                        <span>Gas on Destination - </span>
                         <span>
                           {gasOnDestination} {networkTo.symbol}
                         </span>
