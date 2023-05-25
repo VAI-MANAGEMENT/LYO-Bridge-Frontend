@@ -948,7 +948,7 @@ function BridgeComponent() {
 
                 <div className="btn-wrp">{renderActionButton()}</div>
 
-                <p className="note">* Please note that avarage transaction processing time is 24 hours.</p>
+                <p className="note">* Please note that average transaction processing time is 24 hours.</p>
 
 
               </div>
