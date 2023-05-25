@@ -26,10 +26,10 @@ const ThemeProvider = ({ children }) => {
 
 
   function toggleTheme() {
-    if (theme === "dark-theme") {
-      setTheme("light-theme");
-    } else {
+    if (theme === "light-theme") {
       setTheme("dark-theme");
+    } else {
+      setTheme("light-theme");
     }
   }
 
@@ -38,8 +38,8 @@ const ThemeProvider = ({ children }) => {
     if(tmp_theme) {
       setTheme(tmp_theme)
     }else{
-      setTheme("dark-theme")
-      localStorage.setItem("theme", "dark-theme");
+      setTheme("light-theme")
+      localStorage.setItem("theme", "light-theme");
     }
   }, [])
 
