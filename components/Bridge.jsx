@@ -30,24 +30,26 @@ import { BsArrowUpRightSquare, BsInfoCircle } from "react-icons/bs";
 import TokenInfo from "./TokenInfo";
 
 function BridgeComponent() {
-  const assetList = [
-    {
-      name: "LYO",
-      symbol: "LYO",
-      imageUrl: logoSmall,
-      childTokenAddress: process.env.BRIDGE_MAIN_TOKEN_ADDRESS,
-    },
-  ];
+  // const assetList = [
+  //   {
+  //     name: "LYO",
+  //     symbol: "LYO",
+  //     imageUrl: logoSmall,
+  //     childTokenAddress: process.env.BRIDGE_MAIN_TOKEN_ADDRESS,
+  //   },
+  // ];
 
   const [key, setKey] = useState("bridge");
   const [tokenContract, setTokenContract] = useState();
+  const [tokenSymbol, setTokenSymbol] = useState("LYO");
   const [tokenBalance, setTokenBalance] = useState();
   const [bridgeTokenBalance, setBridgeTokenBalance] = useState();
   const [tokenDecimals, setTokenDecimals] = useState(8);
   const [amount, setAmount] = useState(0);
   const [networkFrom, setNetworkFrom] = useState();
+  const [assetList, setAssetList] = useState();
   const [networkTo, setNetworkTo] = useState();
-  const [tokenAddressFrom, setTokenAddressFrom] = useState(assetList[0].childTokenAddress);
+  const [tokenAddressFrom, setTokenAddressFrom] = useState();
   const [tokenAddressTo, setTokenAddressTo] = useState();
   const [networks, setNetworks] = useState([]);
   const [showConnectModal, setShowConnectModal] = useState(false);
@@ -58,6 +60,7 @@ function BridgeComponent() {
   const [show, setShow] = useState(false);
   const [fee, setFee] = useState();
   const [sideBridgeContractFrom, setSideBridgeContractFrom] = useState();
+  const [selected, setSelected] = useState('');
 
 
   const alert = useAlert();
@@ -78,14 +81,30 @@ function BridgeComponent() {
   );
 
   useEffect(() => {
-    if (networkFrom && chainId) {
+    if (assetList) {
       getTokenContract();
+      getSideBridgeContract();
+      changeSymbol()
     }
-  }, [tokenAddressFrom, walletAddress, chainId, tokenAddressTo]);
+  }, [walletAddress, chainId, selected, assetList, networkFrom]);
+
+  useEffect(() => {
+    if (assetList) {
+      setTokenAddressFrom(assetList[0].address)
+      setTokenSymbol(assetList[0].symbol)
+    }
+
+  }, [assetList, networkFrom]);
 
   useEffect(() => {
     getNetworks();
   }, []);
+
+  useEffect(() => {
+    if (networkFrom) {
+      getFee()
+    }
+  }, [chainId, networkFrom, sideBridgeContractFrom]);
 
   useEffect(() => {
     getSideBridgeContract();
@@ -117,13 +136,10 @@ function BridgeComponent() {
 
   }, [tokenBalance]);
 
-
-
   useEffect(() => {
     changeNetwork();
 
   }, [networkFrom]);
-
 
 
   useEffect(() => {
@@ -132,29 +148,18 @@ function BridgeComponent() {
     // getBridgeTokenBalance(networkFrom)
   }, [networkFrom]);
 
+  useEffect(() => { 
+    if(networkTo){
+      getBridgeTokenBalance(networkTo)      
+    }   
+
+  }, [networkTo, chainId,selected,tokenSymbol,networkFrom,networks]);
+
   useEffect(() => {
-    if (networkFrom) {
-      getBridgeTokenBalance()
-      console.log(bridgeTokenBalance)
-    }
+    changeNetwork();
+    getAssets()
+  }, [networkFrom]);
 
-  }, [networkFrom, chainId,bridgeTokenBalance,walletAddress]);
-
-
-  // useEffect(() => {
-  //  if(chainId != process.env.chain_id){
-  //   getFee()
-  //  } 
-
-  // }, [chainId]);
-
-
-  //   useEffect(() => {
-  //     if(chainId && walletAddress){
-  //  getBridgeTokenBalance()
-  //     }
-
-  //   }, [chainId, tokenContract, tokenBalance]);
 
   useEffect(() => {
     if (chainId != process.env.chain_id) {
@@ -173,16 +178,44 @@ function BridgeComponent() {
     }
   }, [networks]);
 
+  function getAssets() {
+    if (networkFrom) {
+      setAssetList(networkFrom.tokens)
+
+      //remove when needs multiassets
+      setSelected(networkFrom.tokens[0])
+    }
+  }
+
+  function changeSymbol() {
+    if (selected) {
+      setTokenSymbol(selected.symbol);
+    }
+    else {
+      setTokenSymbol(assetList[0].symbol)
+    }
+  }
+
   function getTokenContract() {
-    if (tokenAddressFrom) {
+    if (selected) {
       try {
-        const contract = new web3eth.eth.Contract(tokenABI, tokenAddressFrom);
+        const contract = new web3eth.eth.Contract(tokenABI, selected.address);
         setTokenContract(contract);
         getTokenDetails(tokenContract);
       } catch (error) {
         console.log(error)
       }
 
+    }
+    else {
+      try {
+        const contract = new web3eth.eth.Contract(tokenABI, assetList[0].address);
+        setTokenContract(contract);
+        getTokenDetails(tokenContract);
+      } catch (error) {
+        console.log(error)
+
+      }
     }
   }
 
@@ -213,50 +246,45 @@ function BridgeComponent() {
 
   }
 
-  async function getBridgeTokenBalance() {
+  async function getBridgeTokenBalance(networkTo) {
     try {
-      if(networkFrom.chainID === process.env.chain_id){
-        const contract = new web3eth.eth.Contract(bridgeABI,process.env.MAIN_BRIDGE_ADDRESS);
+      if (networkTo) {
 
-        let totalLockedAmount = await contract.methods.totalLockedAmount().call()
-  
+        let networkTobridgeAddress;
+        let web3side = new Web3(networkTo.wsUrl);
+
+        networkTobridgeAddress = networkTo.tokens.find(token => token.symbol === tokenSymbol);
+
+
+        let contract = new web3side.eth.Contract(sideBridgeABI, networkTobridgeAddress.bridgeAddress);
+
+        let totalLockedAmount = await contract.methods.totalLockedAmount().call({ from: networkTobridgeAddress.bridgeAddress })
+
         totalLockedAmount = totalLockedAmount / 10 ** 8
-        console.log("🚀 ~ file: Bridge.jsx:224 ~ getBridgeTokenBalance ~ totalLockedAmount:", totalLockedAmount)
+
         setBridgeTokenBalance(totalLockedAmount)
-      
       }
-      else{
-        let totalLockedAmount = await sideBridgeContractFrom.methods.totalLockedAmount().call();
-        totalLockedAmount = totalLockedAmount / 10 ** 8
-        setBridgeTokenBalance(totalLockedAmount)
-     
-      }
-      
 
     } catch (error) {
       console.log(error)
-
     }
-
-
-
   }
-
-
 
   function getSideBridgeContract() {
 
-    if (networkFrom && networkFrom.bridgeAddress) {
+    if (selected) {
       try {
-        const contract = new web3eth.eth.Contract(sideBridgeABI, networkFrom.bridgeAddress);
+        const contract = new web3eth.eth.Contract(sideBridgeABI, selected.bridgeAddress);
         setSideBridgeContractFrom(contract);
 
-        // setTimeout(() => {
-        //   if(sideBridgeContractFrom && sideBridgeABI && networkFrom.bridgeAddress){
-        //   getFee();
-        //   }
-        //   }, 10000);
-
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    else {
+      try {
+        const contract = new web3eth.eth.Contract(sideBridgeABI, assetList[0].bridgeAddress);
+        setSideBridgeContractFrom(contract);
       } catch (error) {
         console.log(error)
       }
@@ -585,10 +613,12 @@ function BridgeComponent() {
     if (networkFrom.chainID == process.env.chain_id) {
       try {
         if (tokenContract) {
+          let bridgeAddress = selected ? selected.bridgeAddress : assetList[0].bridgeAddress;
+          let tokenAddress = selected ? selected.address : assetList[0].address;
 
           let result = await tokenContract.methods
             .approve(
-              process.env.MAIN_BRIDGE_ADDRESS,
+              bridgeAddress,
               amountFormatted.toString()
             )
             .send({ from: walletAddress });
@@ -606,7 +636,7 @@ function BridgeComponent() {
                 amountFormatted.toString(),
                 approveTxHash
               )
-              .send({ from: walletAddress, value: 0 });
+              .send({ from: walletAddress, value: fee });
 
 
             let lockTxHash = lock.transactionHash;
@@ -637,10 +667,11 @@ function BridgeComponent() {
 
       if (tokenContract) {
         try {
-
+          let bridgeAddress = selected ? selected.bridgeAddress : assetList[0].bridgeAddress;
+          let tokenAddress = selected ? selected.address : assetList[0].address;
           let result = await tokenContract.methods
             .approve(
-              networkFrom.bridgeAddress,
+              bridgeAddress,
               amountFormatted.toString()
             )
             .send({ from: walletAddress });
@@ -854,6 +885,11 @@ function BridgeComponent() {
                       <div className="d-flex gap-2 align-items-center"><Image src={logoSmall} width="20" height={20} />LYO</div>
                     </div>
                   </div>
+                  {/* <select value={selected ? selected.symbol : "LYO"} className="form-select" onChange={(e) => { handleChange(e); }}>
+                    {assetList?.map((item) => (
+                      <option key={item.index} value={item.symbol}><Image src={logoSmall} width="20" height={20} /> {item.symbol}</option>
+                    ))}
+                  </select> */}
 
                 </div>
 
@@ -874,8 +910,8 @@ function BridgeComponent() {
                     onClick={(e) => {
                       setNetworkFrom(networkTo);
                       setNetworkTo(networkFrom);
-                      setTokenAddressFrom(tokenAddressTo)
-                      setTokenAddressTo(tokenAddressFrom)
+                      setTokenAddressFrom(assetList[0].address)
+                      getTokenContract()
                     }}
                   />
                   <div className="col-md-6">
@@ -893,14 +929,14 @@ function BridgeComponent() {
 
                 <label>Amount</label>
                 <InputComponent
-                  imgPath={assetList[0].imageUrl}
-                  labelName={assetList[0].name}
-                  copyText={networkFrom ? tokenAddressFrom : ""}
+                  imgPath={logoSmall}
+                  // labelName={assetList[0].name}
+                  copyText={selected?.address}
                   balance={tokenBalance}
                   radioSelector={true}
                   inputValue={amount}
                   setInputAmount={getAmount}
-                  symbol={assetList[0].name}
+                  symbol={tokenSymbol}
                   tokenDecimal={tokenDecimals}
                   modalActive={false}
                 />
@@ -924,7 +960,7 @@ function BridgeComponent() {
                   {amount && assetList ?
                     <div className="info-wrp text-right">
                       <span>You will recieve - </span>
-                      <span>  {amount} {assetList[0].name}</span>
+                      <span>  {amount} {tokenSymbol}</span>
                     </div>
                     : ""}
                   {gasOnDestination ? (

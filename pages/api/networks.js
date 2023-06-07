@@ -6,7 +6,10 @@ export default async function handler(req, res) {
     try {
         var config = {
             method: "GET",
-            url: appLink.API_URL + 'bridgeserver-lfi/chains'
+            url: appLink.API_URL + 'bridgeserver-lfi/chains',
+            headers: {
+                'x-api-key': process.env.CUSTOMER_API_KEY
+            },
         };
         const result = await axios(config);
        
