@@ -65,7 +65,7 @@ function BridgeComponent() {
 
   const alert = useAlert();
   const { walletAddress, chainId, switchNetwork } = useContext(WalletContext);
-  const web3eth = new Web3(
+  let web3eth = new Web3(
     Web3.givenProvider ||
     "https://solemn-summer-shadow.bsc-testnet.discover.quiknode.pro/1b0c85b08d945ae4d5838b5215d52e4aae37c21f/"
   );
@@ -100,11 +100,11 @@ function BridgeComponent() {
     getNetworks();
   }, []);
 
-  useEffect(() => {
-    if (networkFrom) {
-      getFee()
-    }
-  }, [chainId, networkFrom, sideBridgeContractFrom]);
+  // useEffect(() => {
+  //   if (networkFrom) {
+  //     getFee()   
+  //   }
+  // }, [chainId, networkFrom, sideBridgeContractFrom]);
 
   useEffect(() => {
     getSideBridgeContract();
@@ -124,11 +124,11 @@ function BridgeComponent() {
   }, [networkTo]);
 
   useEffect(() => {
-    if (tokenContract) {
+    if (networkFrom) {
       getTokenDetails(tokenContract);
-
     }
-  }, [tokenContract]);
+
+  }, [tokenContract, selected]);
 
   useEffect(() => {
 
@@ -137,23 +137,17 @@ function BridgeComponent() {
   }, [tokenBalance]);
 
   useEffect(() => {
-    changeNetwork();
-
-  }, [networkFrom]);
-
-
-  useEffect(() => {
 
     renderActionButton();
     // getBridgeTokenBalance(networkFrom)
   }, [networkFrom]);
 
-  useEffect(() => { 
-    if(networkTo){
-      getBridgeTokenBalance(networkTo)      
-    }   
+  useEffect(() => {
+    if (networkTo) {
+      getBridgeTokenBalance(networkTo)
+    }
 
-  }, [networkTo, chainId,selected,tokenSymbol,networkFrom,networks]);
+  }, [networkTo, chainId, selected, tokenSymbol, networkFrom, networks]);
 
   useEffect(() => {
     changeNetwork();
@@ -186,6 +180,7 @@ function BridgeComponent() {
       setSelected(networkFrom.tokens[0])
     }
   }
+
 
   function changeSymbol() {
     if (selected) {
@@ -220,29 +215,18 @@ function BridgeComponent() {
   }
 
   async function getFee() {
-
-    try {
-      if (chainId == process.env.chain_id) {
-        let feeAmount = await contractBridge.methods.bridgeFee().call();
+    if (sideBridgeContractFrom) {
+      try {
+        let feeAmount = await sideBridgeContractFrom.methods.bridgeFee().call();
         setFee(feeAmount)
         return feeAmount
 
-      }
-      else {
-
-        const contract = new web3eth.eth.Contract(sideBridgeABI, networkFrom.bridgeAddress);
-
-        let feeAmount = await contract.methods.bridgeFee().call();
-        setFee(feeAmount)
-        return feeAmount
+      } catch (error) {
+        // console.log("🚀 ~ file: Bridge.jsx:181 ~ getFee ~ error:", error)
 
       }
-
-
-    } catch (error) {
-      console.log(error)
-
     }
+
 
   }
 
@@ -292,8 +276,9 @@ function BridgeComponent() {
   }
 
   async function getTokenDetails(tokenContract) {
-    try {
-      let decimals = await Web3Calls.getTokenDecimals(tokenContract);
+
+    try {     
+      let decimals = await Web3Calls.getTokenDecimals(tokenContract);    
       setTokenDecimals(decimals);
 
       if (walletAddress) {
@@ -548,30 +533,18 @@ function BridgeComponent() {
 
   }
 
-  async function getTxStatus(hash) {
-    let result = await ApiCalls.getTxStatus(hash);
+  let intervalTime = null;
 
-    setBridgeLoader(false);
-    if (result.data.data.length > 0) {
-
-      if (result.data.data[0].isCompleted) {
+  async function getTxStatus(id) {
+    let result = await ApiCalls.getTxStatus(id);
+    try {
+      if (result.data.data.isWalletToBridgeCompleted == true) {
+        setBridgeLoader(false);
+        setAmount(0);
+        getTokenDetails(tokenContract);
         alert.show(
           <div>
-            Transaction completed<br />{" "}
-            <a href={getBlockExploreLink(result.data.data[0].bridgeToWallet.chainID) + "/tx/" + result.data.data[0].bridgeToWallet.transactionHash} className="link" target="_blank" rel="noreferrer">
-              View Transaction
-            </a>
-          </div>,
-          {
-            type: "success",
-            timeout: 50000,
-          }
-        );
-      }
-      else {
-        alert.show(
-          <div>
-            Transaction is pending for approval <br />{" "}
+            Transaction is pending for approval<br />{" "}
             <a className="link" onClick={(e) => { handleShow(); getTransactions(); }}>
               View Status
             </a>
@@ -581,27 +554,100 @@ function BridgeComponent() {
             timeout: 5000,
           }
         );
-        getTransactions();
+      }
+      else {
+        intervalTime = setInterval(async function () {
+          let result = await ApiCalls.getTxStatus(id);
+          setBridgeLoader(true)
+          if (result.data.data.isWalletToBridgeCompleted == true) {
+            clearInterval(intervalTime)
+            setBridgeLoader(true)
+            alert.show(
+              <div>
+                Transaction is pending for approval<br />{" "}
+                <a className="link" onClick={(e) => { handleShow(); getTransactions(); }}>
+                  View Status
+                </a>
+              </div>,
+              {
+                type: "success",
+                timeout: 5000,
+              }
+            );
+            setBridgeLoader(false);
+            setAmount(0)
+          }
+          else {
+            setBridgeLoader(true)
+
+          }
+
+        }, 10000);
       }
 
-    }
-
-    else {
+    } catch (error) {
+      console.log(error)
       alert.show(
         <div>
-          Transaction failed <br />
-
+          Transaction not processed<br />{" "}
         </div>,
         {
-          type: "error",
-          timeout: 3000,
+          type: "warning",
+          timeout: 5000,
         }
       );
-
+      setBridgeLoader(false);
     }
   }
 
+  async function saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount) {
+    if (transactionHash && chainID && tokenAddress && bridgeAddress) {
+      try {
+        getTokenDetails(tokenContract);
+        let result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount);
+      
+        if (result.data.data._id) {
+          setTimeout(() => {
+            getTxStatus(result.data.data._id);
+
+            setBridgeLoader(true)
+          }, 10000);
+        }
+
+      } catch (error) {
+        getTokenDetails(tokenContract);
+        setBridgeLoader(false)
+        alert.show(
+          <div>
+            Transaction not processed <br />
+          </div>,
+          {
+            type: "error",
+            timeout: 3000,
+          }
+        );
+      }
+    }
+
+
+  }
+
+  async function getAllowance(walletAddress, spender) {
+    let allowance = await tokenContract.methods
+      .allowance(
+        walletAddress,
+        spender,
+      )
+      .call({ from: walletAddress });
+
+    return allowance
+  }
+
+
   async function callBridge() {
+
+    let approve_amount =
+      "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
     setBridgeLoader(true);
     let amountFormatted = parseFloat(amount) * 10 ** tokenDecimals;
@@ -616,44 +662,53 @@ function BridgeComponent() {
           let bridgeAddress = selected ? selected.bridgeAddress : assetList[0].bridgeAddress;
           let tokenAddress = selected ? selected.address : assetList[0].address;
 
-          let result = await tokenContract.methods
-            .approve(
-              bridgeAddress,
-              amountFormatted.toString()
-            )
-            .send({ from: walletAddress });
+          let allowanceResult = await getAllowance(walletAddress, bridgeAddress)
 
+          if (allowanceResult < parseFloat(amount)) {
+            let result = await tokenContract.methods
+              .approve(
+                bridgeAddress,
+                approve_amount
+              )
+              .send({ from: walletAddress });
 
-          if (result) {
+            if (result) {
+              let approveTxHash = result.transactionHash;
+              const contract = new web3eth.eth.Contract(bridgeABI, bridgeAddress);
 
-            let approveTxHash = result.transactionHash;
+              // if (fee) {
+              let lock = await contract.methods
+                .lockTokens(
+                  networkTo.chainID,
+                  amountFormatted.toString(),
+                  approveTxHash
+                )
+                .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {              
+                  if (hash) {
+                    saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
+                  }
+                })
 
+              getTokenDetails(tokenContract);
+            }
+          }
 
-            // if (fee) {
-            let lock = await contractBridge.methods
+          else {
+            const contract = new web3eth.eth.Contract(bridgeABI, bridgeAddress);
+            let lock = await contract.methods
               .lockTokens(
                 networkTo.chainID,
                 amountFormatted.toString(),
-                approveTxHash
+                "0x4d3698a1b5ba37c884f644e03733e28d1ee398cca155ca2c434e5b11eb4165eb"
               )
-              .send({ from: walletAddress, value: fee });
-
-
-            let lockTxHash = lock.transactionHash;
-
-            if (lockTxHash) {
-              setTimeout(() => {
-                getTxStatus(lockTxHash);
-                setBridgeLoader(false);
-                setAmount(0);
-              }, 10000);
-            }
+              .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {             
+                if (hash) {
+                  saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
+                }
+              })
 
             getTokenDetails(tokenContract);
           }
-
-
-          // }
         }
       } catch (error) {
         console.log(error)
@@ -669,51 +724,67 @@ function BridgeComponent() {
         try {
           let bridgeAddress = selected ? selected.bridgeAddress : assetList[0].bridgeAddress;
           let tokenAddress = selected ? selected.address : assetList[0].address;
-          let result = await tokenContract.methods
-            .approve(
-              bridgeAddress,
-              amountFormatted.toString()
-            )
-            .send({ from: walletAddress });
 
-          if (result) {
+          let allowanceResult = await getAllowance(walletAddress, bridgeAddress)
 
-            // if (fee) {
-            let approveTxHash = result.transactionHash;
+          if (allowanceResult < parseFloat(amount)) {
+            let result = await tokenContract.methods
+              .approve(
+                bridgeAddress,
+                approve_amount
+              )
+              .send({ from: walletAddress });
+
+            if (result) {
+              // if (fee) {
+              let approveTxHash = result.transactionHash;
+              let gas = await ApiCalls.getGasFee(networkFrom.chainID);
+              gas = gas * 21000;
+              const contract = new web3eth.eth.Contract(sideBridgeABI, bridgeAddress);
+
+              let returnResult = await contract.methods
+                .returnTokens(
+                  walletAddress,
+                  networkTo.chainID,
+                  amountFormatted.toString(),
+                  approveTxHash
+                )
+                .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {
+                  if (hash) {
+                    saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
+                  }
+                
+                })
+                getTokenDetails(tokenContract);
+            }
+          }
+
+          else {
+            const contract = new web3eth.eth.Contract(sideBridgeABI, bridgeAddress);
             let gas = await ApiCalls.getGasFee(networkFrom.chainID);
             gas = gas * 21000;
-            gas = parseInt(gas + (gas * 0.2))
-            let returnResult = await sideBridgeContractFrom.methods
+            let returnResult = await contract.methods
               .returnTokens(
                 walletAddress,
                 networkTo.chainID,
                 amountFormatted.toString(),
-                approveTxHash
+                "0xc0baff50e9202abab115712060f60e35f755093baa730a6f606a51362254fed1"
               )
-              .send({ from: walletAddress, value: 0 });
-
-            let returnResultHash = returnResult.transactionHash;
-
-            if (returnResultHash) {
-              setTimeout(() => {
-                getTxStatus(returnResultHash);
-                setBridgeLoader(false);
-                setAmount(0);
-              }, 10000);
-
-            }
-            getTokenDetails(tokenContract);
+              .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {
+                if (hash) {
+                  saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
+                }
+               
+              })
+              getTokenDetails(tokenContract);
           }
-
 
           // }
         } catch (error) {
           console.log(error)
           setBridgeLoader(false)
         }
-
       }
-
 
     }
 

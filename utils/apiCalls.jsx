@@ -3,49 +3,49 @@ import appLink from "./urls";
 
 const qs = require("qs");
 
-function getNetworks() { 
+function getNetworks() {
   var config = {
     method: "GET",
-    url: '/api/networks'  
+    url: '/api/networks'
   };
   return axios(config);
 }
 
-function getBridgeTransactions(walletAddress) { 
+function getBridgeTransactions(walletAddress) {
   var config = {
-    method: "GET",    
-    url:'api/transactionList?fromAddress='+walletAddress 
+    method: "GET",
+    url: 'api/transactionList?fromAddress=' + walletAddress
   };
   return axios(config);
 }
 
-function getTxStatus(hash) { 
+function getTxStatus(id) {
   var config = {
-    method: "GET",    
-    url: 'api/transactionStatus?transactionHash='+hash 
+    method: "GET",
+    url: 'api/transactionStatus?transactionId=' + id
   };
   return axios(config);
 }
 
-function getTokenDetails() { 
+function getTokenDetails() {
   var config = {
-    method: "GET",    
+    method: "GET",
     url: 'https://openapi.lyotrade.com/sapi/v1/ticker?symbol=lyo1usdt'
   };
   return axios(config);
 }
 const getGasBsc = () => {
   var config = {
-      method: "GET",
-      url: 'https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=VJN565NH8S8FHIW6T6N1X7NMUMT44S9CYA'
+    method: "GET",
+    url: 'https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=VJN565NH8S8FHIW6T6N1X7NMUMT44S9CYA'
   };
   return axios(config);
 }
 
 const getGasEth = () => {
   var config = {
-      method: "GET",
-      url: 'https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=XE3P41TK181T2CM38KVIJ341BZ9E614X8D'
+    method: "GET",
+    url: 'https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=XE3P41TK181T2CM38KVIJ341BZ9E614X8D'
   };
   return axios(config);
 
@@ -54,36 +54,53 @@ const getGasEth = () => {
 
 const getGasAvalanche = () => {
   var config = {
-      method: "GET",
-      url: 'https://api.snowtrace.io/api?module=proxy&action=eth_gasPrice&apikey=2T3U9K3I9MWCMFTMJSJEQZ91H36NAETDP6'
+    method: "GET",
+    url: 'https://api.snowtrace.io/api?module=proxy&action=eth_gasPrice&apikey=2T3U9K3I9MWCMFTMJSJEQZ91H36NAETDP6'
   };
   return axios(config);
 }
 
 const getGasFantom = () => {
   var config = {
-      method: "GET",
-      url: 'https://api.ftmscan.com/api?module=gastracker&action=gasoracle&apikey=8VFIRUASQKP2HTETCNG5FG8FJD9HFRRVQC'
+    method: "GET",
+    url: 'https://api.ftmscan.com/api?module=gastracker&action=gasoracle&apikey=8VFIRUASQKP2HTETCNG5FG8FJD9HFRRVQC'
   };
   return axios(config);
 }
 
 const getGasPolygon = () => {
   var config = {
-      method: "GET",
-      url: 'https://api.polygonscan.com/api?module=gastracker&action=gasoracle&apikey=DN1HGWIX86Q65DTTX43UQGGJF6A3AC85R5'
+    method: "GET",
+    url: 'https://api.polygonscan.com/api?module=gastracker&action=gasoracle&apikey=DN1HGWIX86Q65DTTX43UQGGJF6A3AC85R5'
   };
   return axios(config);
 }
 
+function saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount) {
+  let data = qs.stringify({
+    transactionHash: transactionHash,
+    chainID: chainID,
+    tokenAddress: tokenAddress,
+    bridgeAddress: bridgeAddress,
+    amount: amount
+  });
+  var config = {
+    method: "POST",
+    url: 'api/saveTransaction',
+    data: data
+  };
+
+  return axios(config);
+}
+
 async function getGasFee(networkChainId) {
-  let gas; 
-  if (networkChainId == 97 || networkChainId == 56 ) {
+  let gas;
+  if (networkChainId == 97 || networkChainId == 56) {
     const response = await getGasBsc();
     gas = response.data.result.SafeGasPrice;
   }
 
-  if (networkChainId == 80001 || networkChainId == 137 ) {
+  if (networkChainId == 80001 || networkChainId == 137) {
     const response = await getGasPolygon();
     gas = response.data.result.SafeGasPrice;
   }
@@ -111,12 +128,13 @@ async function getGasFee(networkChainId) {
 }
 
 
-const ApiCalls = { 
-  getNetworks: getNetworks,  
+const ApiCalls = {
+  getNetworks: getNetworks,
   getBridgeTransactions: getBridgeTransactions,
-  getTxStatus : getTxStatus,
+  getTxStatus: getTxStatus,
   getTokenDetails: getTokenDetails,
-  getGasFee:getGasFee
+  getGasFee: getGasFee,
+  saveTransaction: saveTransaction
 };
 
 export default ApiCalls;
