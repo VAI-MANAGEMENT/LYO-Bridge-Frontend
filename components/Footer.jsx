@@ -18,11 +18,19 @@ const Footer = () => {
 
             </div>
 
+            <p>
+              LYOTRADE S.R.L<br/>
+              CRN: 3-102-876075<br/>
+              Plaza Florence, Local Ten,<br/>
+              Costa Rica
+
+            </p>
+
           </div>
 
           <div>
             <h5>Help</h5>
-            <a href="https://support.lyotrade.com/" target="_blank" rel="noreferrer">Contact Us</a><br/>
+            <a href="https://support.lyotrade.com/" target="_blank" rel="noreferrer">Contact Us</a><br />
             <a href="https://docs.bridge.lyotrade.com/introduction/what-is-lyobridge" target="_blank" rel="noreferrer">Docs</a>
           </div>
 
