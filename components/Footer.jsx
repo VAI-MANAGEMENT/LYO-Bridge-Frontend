@@ -18,6 +18,14 @@ const Footer = () => {
 
             </div>
 
+            <p>
+              LYOTRADE S.R.L<br/>
+              CRN: 3-102-876075<br/>
+              Plaza Florence, Local Ten,<br/>
+              Costa Rica
+
+            </p>
+
           </div>
 
           <div>
