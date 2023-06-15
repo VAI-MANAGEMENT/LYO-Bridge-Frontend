@@ -4,6 +4,7 @@ import { WalletContext } from "../context/WalletConnect";
 import Web3Calls from "../utils/web3Calls";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import { Tooltip} from "@nextui-org/react";
 
 function ConnectWalletModal({ isOpen, closeModal }) {
   const { disconnectWallet, connectToWallet, walletAddress, balance, chainId, mobileConnect } = useContext(WalletContext);
@@ -14,6 +15,20 @@ function ConnectWalletModal({ isOpen, closeModal }) {
 
       <Modal.Body>
         <div>
+         
+          <Button
+            variant="outline"
+            className="connectLink"
+            onClick={() => {
+              connectToWallet("injected");
+              closeModal();
+            }}
+          >
+            <div w="100%" justifyContent="center">
+              <Image src="/wallet-icons/metamask.png" alt="Metamask Logo" width={25} height={25} borderRadius="3px" />
+              <div>Metamask</div>
+            </div>
+          </Button>
           <Button
             variant="outline"
             className="connectLink"
@@ -33,13 +48,11 @@ function ConnectWalletModal({ isOpen, closeModal }) {
               <div>Coinbase Wallet</div>
             </div>
           </Button>
+          
+          <Tooltip content="Coming Soon" color="invert" className="text-center w-100">
           <Button
             variant="outline"
-            className="connectLink"
-            onClick={() => {
-              connectToWallet("walletconnect");
-              closeModal();
-            }}
+            className="connectLink"          
           >
             <div w="100%" justifyContent="center">
               <Image
@@ -52,19 +65,7 @@ function ConnectWalletModal({ isOpen, closeModal }) {
               <div>Wallet Connect</div>
             </div>
           </Button>
-          <Button
-            variant="outline"
-            className="connectLink"
-            onClick={() => {
-              connectToWallet("injected");
-              closeModal();
-            }}
-          >
-            <div w="100%" justifyContent="center">
-              <Image src="/wallet-icons/metamask.png" alt="Metamask Logo" width={25} height={25} borderRadius="3px" />
-              <div>Metamask</div>
-            </div>
-          </Button>
+          </Tooltip>
         </div>
       </Modal.Body>
     </Modal>

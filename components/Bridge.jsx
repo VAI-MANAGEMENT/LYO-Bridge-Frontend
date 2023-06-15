@@ -100,11 +100,11 @@ function BridgeComponent() {
     getNetworks();
   }, []);
 
-  // useEffect(() => {
-  //   if (networkFrom) {
-  //     getFee()   
-  //   }
-  // }, [chainId, networkFrom, sideBridgeContractFrom]);
+  useEffect(() => {
+    if (networkFrom) {
+      getFee()   
+    }
+  }, [chainId, networkFrom, sideBridgeContractFrom]);
 
   useEffect(() => {
     getSideBridgeContract();
@@ -304,7 +304,7 @@ function BridgeComponent() {
     responsive: "standard",
     sort: true,
     filter: true,
-    download: false,
+    download: true,
     caseSensitive: false,
     searchPlaceholder: 'Search by Date, Amount, Network',
   };
@@ -332,7 +332,18 @@ function BridgeComponent() {
         customBodyRender: (value) => {
           return (Web3.utils.fromWei(value) * 10 ** 10).toFixed(4)
         },
+        onDownload: (buildHead, buildBody, columns, data) => {
+          if (this.state.isexceldownload) {
+            this.callbackMethod((d) => {
+              console.log(d);
+              let val = `${buildHead(columns)}${buildBody(d)}`.trim();
+              console.log(val)
+              return val
+            });
+          }
+        }
       },
+       
     },
     {
       name: "From Network",
@@ -373,6 +384,7 @@ function BridgeComponent() {
         filter: false,
         sort: true,
         searchable: false,
+        download: true,
         customBodyRender: (value) => {
           return renderStatus(value)
 
@@ -396,7 +408,7 @@ function BridgeComponent() {
     },
     {
       name: "TX",
-      label: "TX",
+      label: "TXN #",
       options: {
         filter: false,
         searchable: true,
@@ -683,7 +695,7 @@ function BridgeComponent() {
                   amountFormatted.toString(),
                   approveTxHash
                 )
-                .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {              
+                .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {              
                   if (hash) {
                     saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
                   }
@@ -701,7 +713,7 @@ function BridgeComponent() {
                 amountFormatted.toString(),
                 "0x4d3698a1b5ba37c884f644e03733e28d1ee398cca155ca2c434e5b11eb4165eb"
               )
-              .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {             
+              .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {             
                 if (hash) {
                   saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
                 }
@@ -749,7 +761,7 @@ function BridgeComponent() {
                   amountFormatted.toString(),
                   approveTxHash
                 )
-                .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {
+                .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {
                   if (hash) {
                     saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
                   }
@@ -770,7 +782,7 @@ function BridgeComponent() {
                 amountFormatted.toString(),
                 "0xc0baff50e9202abab115712060f60e35f755093baa730a6f606a51362254fed1"
               )
-              .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {
+              .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {
                 if (hash) {
                   saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
                 }
@@ -877,7 +889,7 @@ function BridgeComponent() {
               // allTx[i].createdAt,
               allTx[i].createdAt,
 
-              allTx[i].walletToBridge.amount,
+              (allTx[i].walletToBridge.amount),             
 
               allTx[i].walletToBridge.network,
 
@@ -1034,7 +1046,7 @@ function BridgeComponent() {
                       <span>  {amount} {tokenSymbol}</span>
                     </div>
                     : ""}
-                  {gasOnDestination ? (
+                  {/* {gasOnDestination ? (
                     <div className="info-wrp text-right">
                       <span>Gas on Destination - </span>
                       <span>
@@ -1043,19 +1055,19 @@ function BridgeComponent() {
                     </div>
                   ) : (
                     ""
-                  )}
-                  {/* {fee && networkFrom ?
-                      <div className="d-flex justify-content-between align-items-center gap-2  info-wrp">
-                        <span>Fee</span>
+                  )} */}
+                  {fee && networkFrom ?
+                      <div className="info-wrp text-right">
+                        <span>Fee - </span>
                         <span>{(parseFloat(fee)) / 10 ** 18} {networkFrom.symbol}</span>
                       </div>
-                      : ""} */}
+                      : ""}
                 </div>
 
 
                 <div className="btn-wrp">{renderActionButton()}</div>
 
-                <p className="note">* Please note that average transaction processing time is 24 hours.</p>
+                <p className="note">* Please note that average transaction processing time up to 24 hours.</p>
 
 
               </div>
