@@ -1727,6 +1727,13 @@ color: rgba(39,98,255,1) !important;
     background-color: unset !important;
 }
 
+.export-link{
+  position: absolute;
+    right: 2px;
+    top: 19px;
+    font-size: 21px;
+    cursor: pointer;
+}
 .submenu-data{
   display: flex;
   gap: 10px;
