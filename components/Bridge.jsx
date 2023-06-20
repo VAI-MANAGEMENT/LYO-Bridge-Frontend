@@ -4,7 +4,7 @@ import logoSmall from "../public/logo-small.png";
 import { Tooltip, changeTheme } from "@nextui-org/react";
 import Moment from "react-moment";
 import moment from 'moment';
-import { BiRefresh } from "react-icons/bi";
+import { BiDownload, BiRefresh } from "react-icons/bi";
 import { BsQuestionCircle } from "react-icons/bs";
 import InputComponent from "./InputComponent";
 import { WalletContext } from "../context/WalletConnect";
@@ -61,6 +61,8 @@ function BridgeComponent() {
   const [fee, setFee] = useState();
   const [sideBridgeContractFrom, setSideBridgeContractFrom] = useState();
   const [selected, setSelected] = useState('');
+  const [exportData, setExportData] = useState('');
+  
 
 
   const alert = useAlert();
@@ -102,7 +104,7 @@ function BridgeComponent() {
 
   useEffect(() => {
     if (networkFrom) {
-      getFee()   
+      getFee()
     }
   }, [chainId, networkFrom, sideBridgeContractFrom]);
 
@@ -277,8 +279,8 @@ function BridgeComponent() {
 
   async function getTokenDetails(tokenContract) {
 
-    try {     
-      let decimals = await Web3Calls.getTokenDecimals(tokenContract);    
+    try {
+      let decimals = await Web3Calls.getTokenDecimals(tokenContract);
       setTokenDecimals(decimals);
 
       if (walletAddress) {
@@ -304,9 +306,10 @@ function BridgeComponent() {
     responsive: "standard",
     sort: true,
     filter: true,
-    download: true,
+    download: false,
     caseSensitive: false,
     searchPlaceholder: 'Search by Date, Amount, Network',
+
   };
 
   const columns = [
@@ -332,18 +335,8 @@ function BridgeComponent() {
         customBodyRender: (value) => {
           return (Web3.utils.fromWei(value) * 10 ** 10).toFixed(4)
         },
-        onDownload: (buildHead, buildBody, columns, data) => {
-          if (this.state.isexceldownload) {
-            this.callbackMethod((d) => {
-              console.log(d);
-              let val = `${buildHead(columns)}${buildBody(d)}`.trim();
-              console.log(val)
-              return val
-            });
-          }
-        }
       },
-       
+
     },
     {
       name: "From Network",
@@ -384,7 +377,6 @@ function BridgeComponent() {
         filter: false,
         sort: true,
         searchable: false,
-        download: true,
         customBodyRender: (value) => {
           return renderStatus(value)
 
@@ -407,15 +399,24 @@ function BridgeComponent() {
       },
     },
     {
-      name: "TX",
-      label: "TXN #",
+      name: "TX_From",
+      label: "From TXN #",
       options: {
         filter: false,
         searchable: true,
         sort: false,
-
       },
     },
+    {
+      name: "TX_To",
+      label: "To TXN #",
+      options: {
+        filter: false,
+        searchable: true,
+        sort: false,
+      },
+    },
+
   ];
 
   const renderStatus = (item) => {
@@ -557,7 +558,7 @@ function BridgeComponent() {
         alert.show(
           <div>
             Transaction is pending for approval<br />{" "}
-            <a className="link" onClick={(e) => { handleShow(); getTransactions(); }}>
+            <a className="link" onClick={(e) => { handleShow(); getTransactions(); exportTransactions()}}>
               View Status
             </a>
           </div>,
@@ -617,7 +618,7 @@ function BridgeComponent() {
       try {
         getTokenDetails(tokenContract);
         let result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount);
-      
+
         if (result.data.data._id) {
           setTimeout(() => {
             getTxStatus(result.data.data._id);
@@ -695,7 +696,7 @@ function BridgeComponent() {
                   amountFormatted.toString(),
                   approveTxHash
                 )
-                .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {              
+                .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {
                   if (hash) {
                     saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
                   }
@@ -713,7 +714,7 @@ function BridgeComponent() {
                 amountFormatted.toString(),
                 "0x4d3698a1b5ba37c884f644e03733e28d1ee398cca155ca2c434e5b11eb4165eb"
               )
-              .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {             
+              .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {
                 if (hash) {
                   saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
                 }
@@ -765,9 +766,9 @@ function BridgeComponent() {
                   if (hash) {
                     saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
                   }
-                
+
                 })
-                getTokenDetails(tokenContract);
+              getTokenDetails(tokenContract);
             }
           }
 
@@ -786,9 +787,9 @@ function BridgeComponent() {
                 if (hash) {
                   saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
                 }
-               
+
               })
-              getTokenDetails(tokenContract);
+            getTokenDetails(tokenContract);
           }
 
           // }
@@ -872,6 +873,20 @@ function BridgeComponent() {
     }
   }
 
+  async function exportTransactions() {   
+    try {
+      let address = walletAddress.toLowerCase();
+      let result = await ApiCalls.exportTransactions(address);
+      if (result.status == 200) {  
+        setExportData(result.data)
+      }
+        
+    } catch (error) {
+
+    }
+
+  }
+
   function getTransactions() {
     setTxData([]);
     let address = walletAddress.toLowerCase();
@@ -889,7 +904,7 @@ function BridgeComponent() {
               // allTx[i].createdAt,
               allTx[i].createdAt,
 
-              (allTx[i].walletToBridge.amount),             
+              (allTx[i].walletToBridge.amount),
 
               allTx[i].walletToBridge.network,
 
@@ -897,6 +912,43 @@ function BridgeComponent() {
 
               allTx[i],
               allTx[i],
+
+              <span key={i} >{allTx[i].walletToBridge.transactionHash ?
+                <div className="d-flex align-items-center gap-1">
+                  {allTx[i].walletToBridge.transactionHash.slice(0, 10)}
+                  {"..."}
+                  {allTx[i].walletToBridge.transactionHash.slice(
+                    allTx[i].walletToBridge.transactionHash.length - 6
+                  )}
+                  <CopyToClipboard
+                    onCopy={otherCopy}
+                    text={allTx[i].walletToBridge.transactionHash}
+                  >
+                    <Tooltip
+                      content={"Copied"}
+                      trigger="click"
+                      color="invert"
+                      placement="top"
+                      css={{
+                        width: "80px",
+                        textAlign: "justify",
+                        fontSize: "11px",
+                      }}
+                    >
+                      <CgCopy />
+                    </Tooltip>
+                  </CopyToClipboard>
+                  <a
+                    href={getBlockExploreLink(allTx[i].walletToBridge.fromChainID) + "tx/" + allTx[i].walletToBridge.transactionHash}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="link"
+                  >
+                    <BsArrowUpRightSquare />
+                  </a>
+
+                </div>
+                : "Not available"}</span>,
 
               <span key={i} >{allTx[i].bridgeToWallet.transactionHash ?
                 <div className="d-flex align-items-center gap-1">
@@ -942,7 +994,9 @@ function BridgeComponent() {
                     </a>}
 
                 </div>
-                : "Not available"}</span>
+                : "Not available"}</span>,
+
+
             ]);
           }
           setTxData(tempTable);
@@ -1046,7 +1100,7 @@ function BridgeComponent() {
                       <span>  {amount} {tokenSymbol}</span>
                     </div>
                     : ""}
-                  {/* {gasOnDestination ? (
+                  {gasOnDestination ? (
                     <div className="info-wrp text-right">
                       <span>Gas on Destination - </span>
                       <span>
@@ -1055,13 +1109,13 @@ function BridgeComponent() {
                     </div>
                   ) : (
                     ""
-                  )} */}
+                  )}
                   {fee && networkFrom ?
-                      <div className="info-wrp text-right">
-                        <span>Fee - </span>
-                        <span>{(parseFloat(fee)) / 10 ** 18} {networkFrom.symbol}</span>
-                      </div>
-                      : ""}
+                    <div className="info-wrp text-right">
+                      <span>Fee - </span>
+                      <span>{(parseFloat(fee)) / 10 ** 18} {networkFrom.symbol}</span>
+                    </div>
+                    : ""}
                 </div>
 
 
@@ -1094,6 +1148,7 @@ function BridgeComponent() {
                     onClick={(e) => {
                       handleShow();
                       getTransactions();
+                      exportTransactions()
                     }}
                   >
                     View Transactions
@@ -1125,6 +1180,18 @@ function BridgeComponent() {
                 data={txData}
                 columns={columns}
                 options={datatableOptions}
+                title={
+                  <div className="row">
+                    <div className="col-auto h4">
+                      {exportData ? 
+                      <a className="export-link" href={`data:text/csv;charset=utf-8,${escape(exportData)}`}> 
+                        <Tooltip content="Export data" color="invert" className="text-center w-100"><BiDownload /></Tooltip>                        
+                      </a>
+                      : ""}
+
+                    </div>
+                  </div>
+                }
               />
             ) : (
               "No transactions to show"
