@@ -14,7 +14,7 @@ const Footer = () => {
             <br />
 
             <div>
-              <p>Email:   <a href="mailto:support@lyotrade.com">support@lyotrade.com</a></p>
+              <p>Email:   <a href="mailto:support@bridge.lyotrade.com">support@bridge.lyotrade.com</a></p>
 
             </div>
 
@@ -30,7 +30,7 @@ const Footer = () => {
 
           <div>
             <h5>Help</h5>
-            <a href="https://support.lyotrade.com/" target="_blank" rel="noreferrer">Contact Us</a><br/>
+            <a href="https://support.bridge.lyotrade.com/" target="_blank" rel="noreferrer">Contact Us</a><br/>
             <a href="https://docs.bridge.lyotrade.com/introduction/what-is-lyobridge" target="_blank" rel="noreferrer">Docs</a>
           </div>
 
