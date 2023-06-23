@@ -4,8 +4,8 @@ import logoSmall from "../public/logo-small.png";
 import { Tooltip, changeTheme } from "@nextui-org/react";
 import Moment from "react-moment";
 import moment from 'moment';
-import { BiDownload, BiRefresh } from "react-icons/bi";
-import { BsQuestionCircle } from "react-icons/bs";
+import { BiDownload, BiInfoCircle, BiRefresh } from "react-icons/bi";
+import { BsFillInfoCircleFill, BsQuestionCircle } from "react-icons/bs";
 import InputComponent from "./InputComponent";
 import { WalletContext } from "../context/WalletConnect";
 import axios from "axios";
@@ -62,7 +62,11 @@ function BridgeComponent() {
   const [sideBridgeContractFrom, setSideBridgeContractFrom] = useState();
   const [selected, setSelected] = useState('');
   const [exportData, setExportData] = useState('');
-  
+  const [destinationFee, setDestinationFee] = useState();
+  const [platformFee, setPlatformFee] = useState();
+  const [totalBridgeFee, setTotalBridgeFee] = useState();
+  const [receiveAmount, setReceiveAmount] = useState();
+  const [feeLoader, setFeeLoader] = useState(false);
 
 
   const alert = useAlert();
@@ -138,6 +142,25 @@ function BridgeComponent() {
 
   }, [tokenBalance]);
 
+  
+  // useEffect(() => {
+
+  //   console.log("platformFee", platformFee)
+
+  // }, [platformFee]);
+
+  // useEffect(() => {
+
+  //   console.log("receiveAmount", receiveAmount)
+
+  // }, [receiveAmount]);
+
+  // useEffect(() => {
+
+  //   console.log("destinationFee", destinationFee)
+
+  // }, [destinationFee]);
+
   useEffect(() => {
 
     renderActionButton();
@@ -156,6 +179,13 @@ function BridgeComponent() {
     getAssets()
   }, [networkFrom]);
 
+  useEffect(() => {
+    if (networkTo) {
+      getBridgeFee(networkTo.chainID, 'LYO',amount)
+      setFeeLoader(true)
+    }
+
+  }, [amount]);
 
   useEffect(() => {
     if (chainId != process.env.chain_id) {
@@ -228,6 +258,35 @@ function BridgeComponent() {
 
       }
     }
+  }
+
+  async function getBridgeFee(chainID, token,amount) {   
+    let result = ApiCalls.getBridgeFee(chainID, token);
+    result
+      .then((response) => {
+        if (response.status == 200) {
+          let destinationFeeFormatted = parseFloat((response.data.data.destinationFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
+          setDestinationFee(destinationFeeFormatted)          
+
+          let platformFeeFormatted = parseFloat((parseFloat(amount) * (response.data.data.platformFee/100)).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0])       
+          setPlatformFee(platformFeeFormatted)
+
+          let receiveAmount = parseFloat((parseFloat(amount) - (parseFloat(platformFeeFormatted) + parseFloat(destinationFeeFormatted))).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0])
+          setReceiveAmount(parseFloat(receiveAmount))
+
+          let totalFee = parseFloat(platformFeeFormatted + destinationFeeFormatted)
+        
+          setTotalBridgeFee(totalFee)
+          setFeeLoader(false)
+        }
+         
+         
+      })
+      .catch((e) => {
+        console.log(e);
+        setFeeLoader(false)
+      });
+
 
 
   }
@@ -463,8 +522,24 @@ function BridgeComponent() {
 
   }
 
+  const renderFee = () => {
+    if (destinationFee && platformFee) {
+      return (
+        <>
+          <div className="d-flex gap-5">
+            Destination Fee : {(destinationFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]} LYO
+          </div>
+          <div className="d-flex gap-5">
+            Platform Fee : {(platformFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]} LYO
+          </div>
+        </>
+
+      );
+    }
+  }
+
   function getAmount(e) {
-    setAmount(e);
+    setAmount(e);   
   }
 
   function renderActionButton() {
@@ -514,12 +589,18 @@ function BridgeComponent() {
         </button>
       );
     }
-
+    if ((destinationFee + platformFee) >= amount) {
+      return (
+        <button className="btn btn-primary mb-2" disabled>
+          Bridging amount should be more than Bridge fee
+        </button>
+      );
+    }
 
     if (bridgeLoader == true) {
       return (
         <button className="btn btn-primary mb-2" disabled>
-          Bridge Proccessing <span className="loader"></span>
+          Bridge Processing <span className="loader"></span>
         </button>
       );
     } else {
@@ -558,7 +639,7 @@ function BridgeComponent() {
         alert.show(
           <div>
             Transaction is pending for approval<br />{" "}
-            <a className="link" onClick={(e) => { handleShow(); getTransactions(); exportTransactions()}}>
+            <a className="link" onClick={(e) => { handleShow(); getTransactions(); exportTransactions() }}>
               View Status
             </a>
           </div>,
@@ -873,14 +954,14 @@ function BridgeComponent() {
     }
   }
 
-  async function exportTransactions() {   
+  async function exportTransactions() {
     try {
       let address = walletAddress.toLowerCase();
       let result = await ApiCalls.exportTransactions(address);
-      if (result.status == 200) {  
+      if (result.status == 200) {
         setExportData(result.data)
       }
-        
+
     } catch (error) {
 
     }
@@ -1080,7 +1161,7 @@ function BridgeComponent() {
 
                 {/* <div className="d-flex justify-content-between info-wrp mt-5">
                   <div className="d-flex justify-content-between align-items-center gap-2">
-                    You will recieve
+                    You will receive
                   </div>
                   <div
                     onClick={() => setOpen(!open)}
@@ -1093,14 +1174,17 @@ function BridgeComponent() {
                 </div> */}
 
 
-                <div id="example-collapse-text" className="mb-4 mt-5">
-                  {amount && assetList ?
+                <div id="example-collapse-text" className="mb-4 mt-5 d-flex align-items-end flex-column">
+                  {amount && assetList && receiveAmount &&  amount >= (destinationFee + platformFee) ?
                     <div className="info-wrp text-right">
-                      <span>You will recieve - </span>
-                      <span>  {amount} {tokenSymbol}</span>
+                      <span>You will receive - </span>
+                      {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
+                         <span>  {(receiveAmount)} LYO</span>
+                      }
+                   
                     </div>
                     : ""}
-                  {gasOnDestination ? (
+                  {/* {gasOnDestination ? (
                     <div className="info-wrp text-right">
                       <span>Gas on Destination - </span>
                       <span>
@@ -1109,12 +1193,17 @@ function BridgeComponent() {
                     </div>
                   ) : (
                     ""
-                  )}
-                  {fee && networkFrom ?
-                    <div className="info-wrp text-right">
-                      <span>Fee - </span>
-                      <span>{(parseFloat(fee)) / 10 ** 18} {networkFrom.symbol}</span>
-                    </div>
+                  )} */}
+                  {amount && totalBridgeFee && networkFrom ?
+                    <Tooltip content={renderFee()} color="invert" >
+                      <div className="info-wrp text-right link">
+                        <span>Bridge fee - </span>
+                        {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
+                        <span>{(totalBridgeFee)} LYO <BsFillInfoCircleFill className="text-info"/></span>
+                        }
+                      
+                      </div>
+                    </Tooltip>
                     : ""}
                 </div>
 
@@ -1183,11 +1272,11 @@ function BridgeComponent() {
                 title={
                   <div className="row">
                     <div className="col-auto h4">
-                      {exportData ? 
-                      <a className="export-link" href={`data:text/csv;charset=utf-8,${escape(exportData)}`}> 
-                        <Tooltip content="Export data" color="invert" className="text-center w-100"><BiDownload /></Tooltip>                        
-                      </a>
-                      : ""}
+                      {exportData ?
+                        <a className="export-link" href={`data:text/csv;charset=utf-8,${escape(exportData)}`}>
+                          <Tooltip content="Export data" color="invert" className="text-center w-100"><BiDownload /></Tooltip>
+                        </a>
+                        : ""}
 
                     </div>
                   </div>

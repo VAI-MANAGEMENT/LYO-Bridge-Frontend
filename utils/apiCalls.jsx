@@ -19,6 +19,14 @@ function getBridgeTransactions(walletAddress) {
   return axios(config);
 }
 
+const getBridgeFee = (chainID,tokenSymbol) => {
+  var config = {
+    method: "GET",
+    url: 'api/getBridgeFee?chainID='+ chainID+'&tokenSymbol='+tokenSymbol 
+  };
+  return axios(config);
+}
+
 function exportTransactions(walletAddress) {
   var config = {
     method: "GET",
@@ -143,7 +151,8 @@ const ApiCalls = {
   getTokenDetails: getTokenDetails,
   getGasFee: getGasFee,
   saveTransaction: saveTransaction,
-  exportTransactions : exportTransactions
+  exportTransactions : exportTransactions,
+  getBridgeFee : getBridgeFee
 };
 
 export default ApiCalls;
