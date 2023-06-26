@@ -106,11 +106,11 @@ function BridgeComponent() {
     getNetworks();
   }, []);
 
-  useEffect(() => {
-    if (networkFrom) {
-      getFee()
-    }
-  }, [chainId, networkFrom, sideBridgeContractFrom]);
+  // useEffect(() => {
+  //   if (networkFrom) {
+  //     getFee()
+  //   }
+  // }, [chainId, networkFrom, sideBridgeContractFrom]);
 
   useEffect(() => {
     getSideBridgeContract();
@@ -180,7 +180,7 @@ function BridgeComponent() {
   }, [networkFrom]);
 
   useEffect(() => {
-    if (networkTo) {
+    if (networkTo && amount) {
       getBridgeFee(networkTo.chainID, 'LYO',amount)
       setFeeLoader(true)
     }
@@ -268,15 +268,15 @@ function BridgeComponent() {
           let destinationFeeFormatted = parseFloat((response.data.data.destinationFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
           setDestinationFee(destinationFeeFormatted)          
 
-          let platformFeeFormatted = parseFloat((parseFloat(amount) * (response.data.data.platformFee/100)).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0])       
+          let platformFeeFormatted = parseFloat((parseFloat(amount) * (response.data.data.platformFee/100)).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);     
           setPlatformFee(platformFeeFormatted)
 
-          let receiveAmount = parseFloat((parseFloat(amount) - (parseFloat(platformFeeFormatted) + parseFloat(destinationFeeFormatted))).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0])
-          setReceiveAmount(parseFloat(receiveAmount))
-
-          let totalFee = parseFloat(platformFeeFormatted + destinationFeeFormatted)
-        
+          let totalFee =(platformFeeFormatted + destinationFeeFormatted)         
           setTotalBridgeFee(totalFee)
+
+          let receiveAmount = parseFloat((parseFloat(amount) - (parseFloat(totalFee))).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
+          setReceiveAmount(parseFloat(receiveAmount))       
+              
           setFeeLoader(false)
         }
          
@@ -596,6 +596,13 @@ function BridgeComponent() {
         </button>
       );
     }
+    if (feeLoader == true) {
+      return (
+        <button className="btn btn-primary mb-2" disabled>
+          Bridge Fee Calculating
+        </button>
+      );
+    }
 
     if (bridgeLoader == true) {
       return (
@@ -694,11 +701,11 @@ function BridgeComponent() {
     }
   }
 
-  async function saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount) {
+  async function saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, platformFee, destinationFee) {
     if (transactionHash && chainID && tokenAddress && bridgeAddress) {
       try {
         getTokenDetails(tokenContract);
-        let result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount);
+        let result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, platformFee, destinationFee);
 
         if (result.data.data._id) {
           setTimeout(() => {
@@ -777,9 +784,9 @@ function BridgeComponent() {
                   amountFormatted.toString(),
                   approveTxHash
                 )
-                .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {
+                .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {
                   if (hash) {
-                    saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
+                    saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                   }
                 })
 
@@ -795,9 +802,9 @@ function BridgeComponent() {
                 amountFormatted.toString(),
                 "0x4d3698a1b5ba37c884f644e03733e28d1ee398cca155ca2c434e5b11eb4165eb"
               )
-              .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {
+              .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {
                 if (hash) {
-                  saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
+                  saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                 }
               })
 
@@ -843,9 +850,9 @@ function BridgeComponent() {
                   amountFormatted.toString(),
                   approveTxHash
                 )
-                .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {
+                .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {
                   if (hash) {
-                    saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
+                    saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                   }
 
                 })
@@ -864,9 +871,9 @@ function BridgeComponent() {
                 amountFormatted.toString(),
                 "0xc0baff50e9202abab115712060f60e35f755093baa730a6f606a51362254fed1"
               )
-              .send({ from: walletAddress, value: fee }).on('transactionHash', function (hash) {
+              .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {
                 if (hash) {
-                  saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString())
+                  saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                 }
 
               })
@@ -1199,7 +1206,7 @@ function BridgeComponent() {
                       <div className="info-wrp text-right link">
                         <span>Bridge fee - </span>
                         {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
-                        <span>{(totalBridgeFee)} LYO <BsFillInfoCircleFill className="text-info"/></span>
+                        <span>{totalBridgeFee} LYO <BsFillInfoCircleFill className="text-info"/></span>
                         }
                       
                       </div>

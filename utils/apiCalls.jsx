@@ -92,13 +92,15 @@ const getGasPolygon = () => {
   return axios(config);
 }
 
-function saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount) {
+function saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, platformFee, destinationFee) {
   let data = qs.stringify({
     transactionHash: transactionHash,
     chainID: chainID,
     tokenAddress: tokenAddress,
     bridgeAddress: bridgeAddress,
-    amount: amount
+    amount: amount,
+    platformFee : platformFee,
+    destinationFee : destinationFee
   });
   var config = {
     method: "POST",
