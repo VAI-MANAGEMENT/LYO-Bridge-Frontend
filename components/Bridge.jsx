@@ -705,7 +705,7 @@ function BridgeComponent() {
     if (transactionHash && chainID && tokenAddress && bridgeAddress) {
       try {
         getTokenDetails(tokenContract);
-        let result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, platformFee, destinationFee);
+        let result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, parseFloat(platformFee) * 10 ** 8, parseFloat(destinationFee) * 10 ** 8);
 
         if (result.data.data._id) {
           setTimeout(() => {
