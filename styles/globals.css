@@ -2369,6 +2369,9 @@ hr {
   height: auto !important;
 }
 
+.tss-1akey0g-MUIDataTableHeadCell-data { 
+  text-transform: capitalize;
+}
 
 @media only screen and (max-width:1440px) {
   .frame-container {
