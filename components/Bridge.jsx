@@ -80,7 +80,7 @@ function BridgeComponent() {
   const handleShow = () => setShow(true);
 
   let otherCopy;
-  let assetLink = "https://testnet.bscscan.com/tx/"; 
+  let assetLink = "https://testnet.bscscan.com/tx/";
 
   useEffect(() => {
     if (assetList) {
@@ -176,9 +176,15 @@ function BridgeComponent() {
   }, [networkFrom]);
 
   useEffect(() => {
-    if (networkTo && amount) {
-      getBridgeFee(networkTo.chainID, 'LYO', amount)
+    if (amount) {
       setFeeLoader(true)
+      if (networkFrom && process.env.BRIDGE_FEE_CONFIG === 'native') {
+        getBridgeFee(networkFrom.chainID, 'LYO', amount)
+      }
+      else if (networkTo) {
+        getBridgeFee(networkTo.chainID, 'LYO', amount)
+      }
+
     }
 
   }, [amount]);
@@ -265,30 +271,34 @@ function BridgeComponent() {
     result
       .then((response) => {
         if (response.status == 200) {
-          let destinationFeeFormatted = parseFloat((response.data.data.destinationFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
-          setDestinationFee(destinationFeeFormatted)
+          if (process.env.BRIDGE_FEE_CONFIG === 'native') {
+            setPlatformFee(response.data.data.platformFee)
+            setTotalBridgeFee(response.data.data.platformFee)
+            setReceiveAmount(parseFloat(amount))
+            setFeeLoader(false)
+          }
+          else {
+            let destinationFeeFormatted = parseFloat((response.data.data.destinationFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);          
+            setDestinationFee(destinationFeeFormatted)
 
-          let platformFeeFormatted = parseFloat((parseFloat(amount) * (response.data.data.platformFee / 100)).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
-          setPlatformFee(platformFeeFormatted)
+            let platformFeeFormatted = parseFloat((parseFloat(amount) * (response.data.data.platformFee / 100)).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);          
+            setPlatformFee(platformFeeFormatted)
 
-          let totalFee = (platformFeeFormatted + destinationFeeFormatted).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]
-          setTotalBridgeFee(totalFee)
+            let totalFee = (platformFeeFormatted + destinationFeeFormatted).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]
+            setTotalBridgeFee(totalFee)
 
-          let receiveAmount = parseFloat((parseFloat(amount) - (parseFloat(totalFee))).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
-          setReceiveAmount(parseFloat(receiveAmount))
+            let receiveAmount = parseFloat((parseFloat(amount) - (parseFloat(totalFee))).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
+            setReceiveAmount(parseFloat(receiveAmount))
 
-          setFeeLoader(false)
+            setFeeLoader(false)
+          }
         }
-
 
       })
       .catch((e) => {
         console.log(e);
         setFeeLoader(false)
       });
-
-
-
   }
 
   async function getBridgeTokenBalance(networkTo) {
@@ -414,10 +424,10 @@ function BridgeComponent() {
         filter: false,
         sort: false,
         searchable: false,
-        customBodyRender: (item) => {         
-          return item.platformFee ||  item.destinationFee ? (
-            <Tooltip content={renderFeeSplit(item.platformFee/ 10 ** 8, item.destinationFee/ 10 ** 8)} color="invert">
-             <span className="text-info">{ ((item.destinationFee + item.platformFee) / 10 ** 8).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]}</span> 
+        customBodyRender: (item) => {
+          return item.platformFee || item.destinationFee ? (
+            <Tooltip content={renderFeeSplit(item.platformFee / 10 ** 8, item.destinationFee / 10 ** 8)} color="invert">
+              <span className="text-info">{((item.destinationFee + item.platformFee) / 10 ** 8).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]}</span>
             </Tooltip>
           ) : (
             0
@@ -425,7 +435,7 @@ function BridgeComponent() {
         },
       },
 
-    }, 
+    },
     {
       name: "From Network",
       label: "From Network",
@@ -750,8 +760,15 @@ function BridgeComponent() {
     if (transactionHash && chainID && tokenAddress && bridgeAddress) {
       try {
         getTokenDetails(tokenContract);
-        let result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, parseFloat(platformFee) * 10 ** 8, parseFloat(destinationFee) * 10 ** 8);
 
+        let result;
+
+        if(process.env.BRIDGE_FEE_CONFIG === 'native'){          
+          result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, 0, 0);
+        }        
+        else{
+          result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, parseFloat(platformFee) * 10 ** 8, parseFloat(destinationFee) * 10 ** 8);
+        }
         if (result.data.data._id) {
           setTimeout(() => {
             getTxStatus(result.data.data._id);
@@ -1043,10 +1060,10 @@ function BridgeComponent() {
               allTx[i].createdAt,
 
               (allTx[i].walletToBridge.amount),
-              allTx[i].platformFee || allTx[i].destinationFee ?   (parseFloat(allTx[i].walletToBridge.amount) - (allTx[i].platformFee + allTx[i].destinationFee)) / 10 ** 8 : (allTx[i].walletToBridge.amount)/ 10 ** 8,
+              allTx[i].platformFee || allTx[i].destinationFee ? (parseFloat(allTx[i].walletToBridge.amount) - (allTx[i].platformFee + allTx[i].destinationFee)) / 10 ** 8 : (allTx[i].walletToBridge.amount) / 10 ** 8,
               allTx[i],
               // allTx[i].platformFee || allTx[i].destinationFee ?  (allTx[i].platformFee +  allTx[i].destinationFee) / 10 ** 8 : 0,
-            
+
               allTx[i].walletToBridge.network,
 
               allTx[i].walletToBridge.chainID,
@@ -1218,20 +1235,7 @@ function BridgeComponent() {
                   tokenDecimal={tokenDecimals}
                   modalActive={false}
                 />
-
-                {/* <div className="d-flex justify-content-between info-wrp mt-5">
-                  <div className="d-flex justify-content-between align-items-center gap-2">
-                    You will receive
-                  </div>
-                  <div
-                    onClick={() => setOpen(!open)}
-                    aria-controls="example-collapse-text"
-                    aria-expanded={open}
-                  >
-                    {amount} {assetList[0].name}
-                    <RiArrowDownSLine />
-                  </div>
-                </div> */}
+              
 
 
                 <div id="example-collapse-text" className="mb-4 mt-5 d-flex align-items-end flex-column">
@@ -1244,29 +1248,30 @@ function BridgeComponent() {
 
                     </div>
                     : ""}
-                  {/* {gasOnDestination ? (
-                    <div className="info-wrp text-right">
-                      <span>Gas on Destination - </span>
-                      <span>
-                        {gasOnDestination} {networkTo.symbol}
-                      </span>
-                    </div>
-                  ) : (
-                    ""
-                  )} */}
-                  {amount && totalBridgeFee && networkFrom ?
-                    <Tooltip content={renderFee()} color="invert" >
-                      <div className="info-wrp text-right link">
-                        <span>Bridge fee - </span>
-                        {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
-                          <span>{totalBridgeFee} LYO <BsFillInfoCircleFill className="text-info" /></span>
-                        }
+                 
+                  {amount && totalBridgeFee && platformFee ?
+                    <>
+                      {process.env.BRIDGE_FEE_CONFIG === 'native' ?
+                        <div className="info-wrp text-right">
+                          <span>Bridge fees - </span>
+                          {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
+                              <span>{totalBridgeFee} <span>{networkFrom.symbol}</span></span>
+                            }
+                        </div> :
+                        <Tooltip content={renderFee()} color="invert" >
+                          <div className="info-wrp text-right link">
+                            <span>Bridge fee - </span>
+                            {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
+                              <span>{totalBridgeFee} LYO <BsFillInfoCircleFill className="text-info" /></span>
+                            }
 
-                      </div>
-                    </Tooltip>
-                    : ""}
+                          </div>
+                        </Tooltip>
+                      }
+                    </>
+                    : ""
+                  }
                 </div>
-
 
                 <div className="btn-wrp">{renderActionButton()}</div>
 
