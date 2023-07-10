@@ -1084,7 +1084,7 @@ function BridgeComponent() {
                     </Tooltip>
                   </CopyToClipboard>
                   <a
-                    href={getBlockExploreLink(allTx[i].walletToBridge.fromChainID) + "tx/" + allTx[i].walletToBridge.transactionHash}
+                    href={getBlockExploreLink(allTx[i].walletToBridge.fromChainID) + "/tx/" + allTx[i].walletToBridge.transactionHash}
                     target="_blank"
                     rel="noreferrer"
                     className="link"
@@ -1121,7 +1121,7 @@ function BridgeComponent() {
                     </Tooltip>
                   </CopyToClipboard>
                   {allTx[i].isRejected == true ? <a
-                    href={getBlockExploreLink(allTx[i].walletToBridge.fromChainID) + "tx/" + allTx[i].bridgeToWallet.transactionHash}
+                    href={getBlockExploreLink(allTx[i].walletToBridge.fromChainID) + "/tx/" + allTx[i].bridgeToWallet.transactionHash}
                     target="_blank"
                     rel="noreferrer"
                     className="link"
