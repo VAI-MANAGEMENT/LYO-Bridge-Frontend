@@ -850,7 +850,7 @@ function BridgeComponent() {
                   approveTxHash
                 )
                 // .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {
-                .send({ from: walletAddress, value: 0, gas: gas }).on('transactionHash', function (hash) {
+                .send({ from: walletAddress, value: process.env.BRIDGE_FEE_CONFIG ? parseFloat(platformFee) * 10 ** 18 : 0, gas: gas }).on('transactionHash', function (hash) {
                   if (hash) {
                     saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                   }
@@ -869,7 +869,7 @@ function BridgeComponent() {
                 "0x4d3698a1b5ba37c884f644e03733e28d1ee398cca155ca2c434e5b11eb4165eb"
               )
               // .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {
-              .send({ from: walletAddress, value: 0, gas: gas }).on('transactionHash', function (hash) {
+              .send({ from: walletAddress, value: process.env.BRIDGE_FEE_CONFIG ? parseFloat(platformFee) * 10 ** 18 : 0, gas: gas, gas: gas }).on('transactionHash', function (hash) {
                 if (hash) {
                   saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                 }
@@ -917,7 +917,7 @@ function BridgeComponent() {
                   amountFormatted.toString(),
                   approveTxHash
                 )
-                .send({ from: walletAddress, value: 0, gas: gas }).on('transactionHash', function (hash) {
+                .send({ from: walletAddress,  value: process.env.BRIDGE_FEE_CONFIG ? parseFloat(platformFee) * 10 ** 18 : 0, gas: gas }).on('transactionHash', function (hash) {
                   if (hash) {
                     saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                   }
@@ -938,7 +938,7 @@ function BridgeComponent() {
                 amountFormatted.toString(),
                 "0xc0baff50e9202abab115712060f60e35f755093baa730a6f606a51362254fed1"
               )
-              .send({ from: walletAddress, value: 0, gas: gas }).on('transactionHash', function (hash) {
+              .send({ from: walletAddress,  value: process.env.BRIDGE_FEE_CONFIG ? parseFloat(platformFee) * 10 ** 18 : 0, gas: gas }).on('transactionHash', function (hash) {
                 if (hash) {
                   saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                 }
