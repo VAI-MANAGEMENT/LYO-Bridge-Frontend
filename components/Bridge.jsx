@@ -80,11 +80,7 @@ function BridgeComponent() {
   const handleShow = () => setShow(true);
 
   let otherCopy;
-  let assetLink = "https://testnet.bscscan.com/tx/";
-  const contractBridge = new web3eth.eth.Contract(
-    bridgeABI,
-    process.env.MAIN_BRIDGE_ADDRESS
-  );
+  let assetLink = "https://testnet.bscscan.com/tx/"; 
 
   useEffect(() => {
     if (assetList) {
