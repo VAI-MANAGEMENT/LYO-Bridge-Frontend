@@ -5,7 +5,8 @@ import appLink from "../../utils/urls";
 export default async function handler(req, res) {
     try {
         const data = req.body     
-      
+        console.log("🚀 ~ file: saveTransaction.js:8 ~ handler ~ data:", data)
+        
         var config = {
             method: "POST",
             url: appLink.API_URL + 'bridgeserver-lfi/transactions',
@@ -18,8 +19,7 @@ export default async function handler(req, res) {
         const result = await axios(config);          
        
         res.status(200).json(result.data)
-    } catch (error) {         
-        console.log("🚀 ~ file: saveTransaction.js:23 ~ handler ~ error:", error)
+    } catch (error) {       
         res.status(200).json({ 'status': 400, mssg: 'An Error Occured' })
     }
 }

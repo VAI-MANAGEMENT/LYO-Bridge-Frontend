@@ -327,7 +327,7 @@ table th {
 
 table td {
   padding-bottom: 15px !important;
-  color: #fff !important;
+  color: #d7d3d3 !important;
   font-size: 14px;
 }
 
@@ -1735,6 +1735,10 @@ color: rgba(39,98,255,1) !important;
     top: 19px;
     font-size: 21px;
     cursor: pointer;
+}
+
+.css-1ex1afd-MuiTableCell-root{
+  border-bottom: 1px solid rgb(113 113 113) !important;
 }
 .submenu-data{
   display: flex;

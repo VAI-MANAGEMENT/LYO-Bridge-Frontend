@@ -187,7 +187,7 @@ function BridgeComponent() {
 
     }
 
-  }, [amount]);
+  }, [amount, networkFrom]);
 
   useEffect(() => {
     if (chainId != process.env.chain_id) {
@@ -278,10 +278,10 @@ function BridgeComponent() {
             setFeeLoader(false)
           }
           else {
-            let destinationFeeFormatted = parseFloat((response.data.data.destinationFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);          
+            let destinationFeeFormatted = parseFloat((response.data.data.destinationFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
             setDestinationFee(destinationFeeFormatted)
 
-            let platformFeeFormatted = parseFloat((parseFloat(amount) * (response.data.data.platformFee / 100)).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);          
+            let platformFeeFormatted = parseFloat((parseFloat(amount) * (response.data.data.platformFee / 100)).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
             setPlatformFee(platformFeeFormatted)
 
             let totalFee = (platformFeeFormatted + destinationFeeFormatted).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]
@@ -405,7 +405,6 @@ function BridgeComponent() {
           return (value / 10 ** 8).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]
         },
       },
-
     },
     {
       name: "receivable",
@@ -415,7 +414,6 @@ function BridgeComponent() {
         sort: true,
         searchable: true,
       },
-
     },
     {
       name: "Fee",
@@ -425,16 +423,24 @@ function BridgeComponent() {
         sort: false,
         searchable: false,
         customBodyRender: (item) => {
-          return item.platformFee || item.destinationFee ? (
-            <Tooltip content={renderFeeSplit(item.platformFee / 10 ** 8, item.destinationFee / 10 ** 8)} color="invert">
-              <span className="text-info">{((item.destinationFee + item.platformFee) / 10 ** 8).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]}</span>
-            </Tooltip>
+          return item.platformFee && item.isNativeFee && item.isNativeFee === true ? (
+            <Tooltip content={item.platformFee} color="invert">
+            <span>{((item.platformFee).toString()).slice(0, 8)}... {getNetworkSymbol(item.walletToBridge.fromChainID)}</span>
+        </Tooltip>
           ) : (
-            0
+            <>
+              {item.destinationFee && item.platformFee ?
+                <Tooltip content={renderFeeSplit(item.platformFee / 10 ** 8, item.destinationFee / 10 ** 8)} color="invert">
+                  <span className="text-info">{((item.destinationFee + item.platformFee) / 10 ** 8).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]}</span>
+                </Tooltip>
+                :
+                0}
+            </>
+
           );
+
         },
       },
-
     },
     {
       name: "From Network",
@@ -763,11 +769,11 @@ function BridgeComponent() {
 
         let result;
 
-        if(process.env.BRIDGE_FEE_CONFIG === 'native'){          
-          result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, 0, 0);
-        }        
-        else{
-          result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, parseFloat(platformFee) * 10 ** 8, parseFloat(destinationFee) * 10 ** 8);
+        if (process.env.BRIDGE_FEE_CONFIG === 'native') {
+          result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, platformFee, 0, true);
+        }
+        else {
+          result = await ApiCalls.saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, parseFloat(platformFee) * 10 ** 8, parseFloat(destinationFee) * 10 ** 8, false);
         }
         if (result.data.data._id) {
           setTimeout(() => {
@@ -917,7 +923,7 @@ function BridgeComponent() {
                   amountFormatted.toString(),
                   approveTxHash
                 )
-                .send({ from: walletAddress,  value: process.env.BRIDGE_FEE_CONFIG ? parseFloat(platformFee) * 10 ** 18 : 0, gas: gas }).on('transactionHash', function (hash) {
+                .send({ from: walletAddress, value: process.env.BRIDGE_FEE_CONFIG ? parseFloat(platformFee) * 10 ** 18 : 0, gas: gas }).on('transactionHash', function (hash) {
                   if (hash) {
                     saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                   }
@@ -938,7 +944,7 @@ function BridgeComponent() {
                 amountFormatted.toString(),
                 "0xc0baff50e9202abab115712060f60e35f755093baa730a6f606a51362254fed1"
               )
-              .send({ from: walletAddress,  value: process.env.BRIDGE_FEE_CONFIG ? parseFloat(platformFee) * 10 ** 18 : 0, gas: gas }).on('transactionHash', function (hash) {
+              .send({ from: walletAddress, value: process.env.BRIDGE_FEE_CONFIG ? parseFloat(platformFee) * 10 ** 18 : 0, gas: gas }).on('transactionHash', function (hash) {
                 if (hash) {
                   saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                 }
@@ -1012,6 +1018,14 @@ function BridgeComponent() {
     }
   }
 
+  function getNetworkSymbol(chainId) {
+    for (var network in networks) {
+      if (networks[network].chainID == chainId) {
+        return networks[network].symbol
+      }
+    }
+  }
+
   function getBlockExploreLink(id) {
     for (var network in networks) {
       if (networks[network].chainID == id) {
@@ -1060,7 +1074,7 @@ function BridgeComponent() {
               allTx[i].createdAt,
 
               (allTx[i].walletToBridge.amount),
-              allTx[i].platformFee || allTx[i].destinationFee ? (parseFloat(allTx[i].walletToBridge.amount) - (allTx[i].platformFee + allTx[i].destinationFee)) / 10 ** 8 : (allTx[i].walletToBridge.amount) / 10 ** 8,
+              allTx[i].isNativeFee && allTx[i].isNativeFee === true ? (allTx[i].walletToBridge.amount / 10 ** 8) : (parseFloat(allTx[i].walletToBridge.amount) - (allTx[i].platformFee + allTx[i].destinationFee)) / 10 ** 8,
               allTx[i],
               // allTx[i].platformFee || allTx[i].destinationFee ?  (allTx[i].platformFee +  allTx[i].destinationFee) / 10 ** 8 : 0,
 
@@ -1205,8 +1219,9 @@ function BridgeComponent() {
                     onClick={(e) => {
                       setNetworkFrom(networkTo);
                       setNetworkTo(networkFrom);
-                      setTokenAddressFrom(assetList[0].address)
-                      getTokenContract()
+                      setTokenAddressFrom(assetList[0].address);
+                      getTokenContract();
+                      setBridgeLoader(false)
                     }}
                   />
                   <div className="col-md-6">
@@ -1235,7 +1250,7 @@ function BridgeComponent() {
                   tokenDecimal={tokenDecimals}
                   modalActive={false}
                 />
-              
+
 
 
                 <div id="example-collapse-text" className="mb-4 mt-5 d-flex align-items-end flex-column">
@@ -1248,15 +1263,15 @@ function BridgeComponent() {
 
                     </div>
                     : ""}
-                 
+
                   {amount && totalBridgeFee && platformFee ?
                     <>
                       {process.env.BRIDGE_FEE_CONFIG === 'native' ?
                         <div className="info-wrp text-right">
                           <span>Bridge fees - </span>
                           {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
-                              <span>{totalBridgeFee} <span>{networkFrom.symbol}</span></span>
-                            }
+                            <span>{totalBridgeFee} <span>{networkFrom.symbol}</span></span>
+                          }
                         </div> :
                         <Tooltip content={renderFee()} color="invert" >
                           <div className="info-wrp text-right link">
