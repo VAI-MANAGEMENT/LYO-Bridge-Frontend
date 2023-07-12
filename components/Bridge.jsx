@@ -278,16 +278,17 @@ function BridgeComponent() {
             setFeeLoader(false)
           }
           else {
-            let destinationFeeFormatted = parseFloat((response.data.data.destinationFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
-            setDestinationFee(destinationFeeFormatted)
+            let destinationFeeFormatted = parseFloat((response.data.data.destinationFee).toString().match(/^-?\d+(?:\.\d{0,8})?/)[0]);
+            setDestinationFee(parseFloat(destinationFeeFormatted))
 
-            let platformFeeFormatted = parseFloat((parseFloat(amount) * (response.data.data.platformFee / 100)).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
+            let platformFeeFormatted = parseFloat((parseFloat(amount) * (response.data.data.platformFee / 100)).toString().match(/^-?\d+(?:\.\d{0,8})?/)[0]);          
             setPlatformFee(platformFeeFormatted)
 
-            let totalFee = (platformFeeFormatted + destinationFeeFormatted).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]
+            let totalFee = (platformFeeFormatted + destinationFeeFormatted).toString().match(/^-?\d+(?:\.\d{0,8})?/)[0]
+         
             setTotalBridgeFee(totalFee)
 
-            let receiveAmount = parseFloat((parseFloat(amount) - (parseFloat(totalFee))).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]);
+            let receiveAmount = parseFloat((parseFloat(amount) - (parseFloat(totalFee))));
             setReceiveAmount(parseFloat(receiveAmount))
 
             setFeeLoader(false)
@@ -431,7 +432,7 @@ function BridgeComponent() {
             <>
               {item.destinationFee && item.platformFee ?
                 <Tooltip content={renderFeeSplit(item.platformFee / 10 ** 8, item.destinationFee / 10 ** 8)} color="invert">
-                  <span className="text-info">{((item.destinationFee + item.platformFee) / 10 ** 8).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]}</span>
+                  <span className="text-info">{((item.destinationFee + item.platformFee) / 10 ** 8)}</span>
                 </Tooltip>
                 :
                 0}
@@ -572,10 +573,12 @@ function BridgeComponent() {
       return (
         <>
           <div className="d-flex gap-5">
-            Destination Fee : {(destinationFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]} LYO
+            Destination Fee : {(destinationFee).toString().match(/^-?\d+(?:\.\d{0,8})?/)[0]} LYO
+          
           </div>
           <div className="d-flex gap-5">
-            Platform Fee : {(platformFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]} LYO
+            Platform Fee : {(platformFee).toString().match(/^-?\d+(?:\.\d{0,8})?/)[0]} LYO
+         
           </div>
         </>
 
@@ -588,10 +591,10 @@ function BridgeComponent() {
       return (
         <>
           <div className="d-flex gap-5">
-            Destination Fee : {(_destinationFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]} LYO
+            Destination Fee : {(_destinationFee)} LYO
           </div>
           <div className="d-flex gap-5">
-            Platform Fee : {(_platformFee).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]} LYO
+            Platform Fee : {(_platformFee)} LYO
           </div>
         </>
 
