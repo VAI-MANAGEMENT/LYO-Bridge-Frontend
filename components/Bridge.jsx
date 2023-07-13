@@ -1217,13 +1217,24 @@ function BridgeComponent() {
 
 
                 <div id="example-collapse-text" className="mb-4 mt-5 d-flex align-items-end flex-column">
-                  {amount && assetList && receiveAmount && amount >= (destinationFee + platformFee) ?
+                  {amount && assetList && receiveAmount  ?
                     <div className="info-wrp text-right">
-                      <span>You will receive - </span>
-                      {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
-                        <span>  {(receiveAmount)} LYO</span>
+                      {process.env.BRIDGE_FEE_CONFIG === 'native' && amount >= (destinationFee + platformFee) ?
+                       <>
+                       <span>You will receive - </span>
+                       {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
+                         <span>  {(receiveAmount)} LYO</span>
+                       }
+                       </>
+                       : 
+                       <>
+                       <span>You will receive - </span>
+                       {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
+                         <span>  {(receiveAmount)} LYO</span>
+                       }
+                       </>
                       }
-
+                     
                     </div>
                     : ""}
 
