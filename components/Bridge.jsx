@@ -424,7 +424,7 @@ function BridgeComponent() {
         sort: false,
         searchable: false,
         customBodyRender: (item) => {
-          return item.platformFee && item.isNativeFee && item.isNativeFee === true ? (
+          return item.platformFee && item?.isNativeFee === true ? (
             <Tooltip content={item.platformFee} color="invert">
             <span>{((item.platformFee).toString()).slice(0, 8)}... {getNetworkSymbol(item.walletToBridge.fromChainID)}</span>
         </Tooltip>
@@ -451,7 +451,7 @@ function BridgeComponent() {
         sort: true,
         searchable: true,
         customBodyRender: (value) => {
-          for (var network in networks) {
+          for (const network in networks) {
             if (networks[network].slug == value) {
               return networks[network].name
             }
@@ -467,7 +467,7 @@ function BridgeComponent() {
         sort: true,
         searchable: true,
         customBodyRender: (value) => {
-          for (var network in networks) {
+          for (const network in networks) {
             if (networks[network].chainID == value) {
               return networks[network].name
             }
@@ -653,7 +653,7 @@ function BridgeComponent() {
         </button>
       );
     }
-    if ((destinationFee + platformFee) >= amount) {
+    if ( !process.env.BRIDGE_FEE_CONFIG && (destinationFee + platformFee) >= amount) {
       return (
         <button className="btn btn-primary mb-2" disabled>
           Bridging amount should be more than Bridge fee
@@ -1014,7 +1014,7 @@ function BridgeComponent() {
   }
 
   function getNetworkName(networkSlug) {
-    for (var network in networks) {
+    for (const network in networks) {
       if (networks[network].slug == networkSlug) {
         return networks[network].name
       }
@@ -1022,7 +1022,7 @@ function BridgeComponent() {
   }
 
   function getNetworkSymbol(chainId) {
-    for (var network in networks) {
+    for (const network in networks) {
       if (networks[network].chainID == chainId) {
         return networks[network].symbol
       }
@@ -1030,7 +1030,7 @@ function BridgeComponent() {
   }
 
   function getBlockExploreLink(id) {
-    for (var network in networks) {
+    for (const network in networks) {
       if (networks[network].chainID == id) {
         return networks[network].blockExplorerUrl
       }
@@ -1038,7 +1038,7 @@ function BridgeComponent() {
   }
 
   function getNetworkNameFromID(id) {
-    for (var network in networks) {
+    for (const network in networks) {
       if (networks[network].chainID == id) {
         return networks[network].name
       }
@@ -1077,7 +1077,7 @@ function BridgeComponent() {
               allTx[i].createdAt,
 
               (allTx[i].walletToBridge.amount),
-              allTx[i].isNativeFee && allTx[i].isNativeFee === true ? (allTx[i].walletToBridge.amount / 10 ** 8) : (parseFloat(allTx[i].walletToBridge.amount) - (allTx[i].platformFee + allTx[i].destinationFee)) / 10 ** 8,
+             allTx[i]?.isNativeFee === true ? (allTx[i].walletToBridge.amount / 10 ** 8) : (parseFloat(allTx[i].walletToBridge.amount) - (allTx[i].platformFee + allTx[i].destinationFee)) / 10 ** 8,
               allTx[i],
               // allTx[i].platformFee || allTx[i].destinationFee ?  (allTx[i].platformFee +  allTx[i].destinationFee) / 10 ** 8 : 0,
 

@@ -4,10 +4,8 @@ import appLink from "../../utils/urls";
 
 export default async function handler(req, res) {
     try {
-        const data = req.body     
-        console.log("🚀 ~ file: saveTransaction.js:8 ~ handler ~ data:", data)
-        
-        var config = {
+        const data = req.body
+        const config = {
             method: "POST",
             url: appLink.API_URL + 'bridgeserver-lfi/transactions',
             headers: {
