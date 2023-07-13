@@ -30,15 +30,6 @@ import { BsArrowUpRightSquare, BsInfoCircle } from "react-icons/bs";
 import TokenInfo from "./TokenInfo";
 
 function BridgeComponent() {
-  // const assetList = [
-  //   {
-  //     name: "LYO",
-  //     symbol: "LYO",
-  //     imageUrl: logoSmall,
-  //     childTokenAddress: process.env.BRIDGE_MAIN_TOKEN_ADDRESS,
-  //   },
-  // ];
-
   const [key, setKey] = useState("bridge");
   const [tokenContract, setTokenContract] = useState();
   const [tokenSymbol, setTokenSymbol] = useState("LYO");
@@ -138,27 +129,7 @@ function BridgeComponent() {
 
   }, [tokenBalance]);
 
-
-  // useEffect(() => {
-
-  //   console.log("platformFee", platformFee)
-
-  // }, [platformFee]);
-
-  // useEffect(() => {
-
-  //   console.log("receiveAmount", receiveAmount)
-
-  // }, [receiveAmount]);
-
-  // useEffect(() => {
-
-  //   console.log("destinationFee", destinationFee)
-
-  // }, [destinationFee]);
-
   useEffect(() => {
-
     renderActionButton();
     // getBridgeTokenBalance(networkFrom)
   }, [networkFrom]);
@@ -850,8 +821,7 @@ function BridgeComponent() {
             if (result) {
               let approveTxHash = result.transactionHash;
               const contract = new web3eth.eth.Contract(bridgeABI, bridgeAddress);
-
-              // if (fee) {
+           
               let lock = await contract.methods
                 .lockTokens(
                   networkTo.chainID,
@@ -912,8 +882,7 @@ function BridgeComponent() {
               )
               .send({ from: walletAddress });
 
-            if (result) {
-              // if (fee) {
+            if (result) {           
               let approveTxHash = result.transactionHash;
               let gas = await ApiCalls.getGasFee(networkFrom.chainID);
               gas = (gas * 21000) + gas;
@@ -951,12 +920,9 @@ function BridgeComponent() {
                 if (hash) {
                   saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                 }
-
               })
             getTokenDetails(tokenContract);
-          }
-
-          // }
+          }      
         } catch (error) {
           console.log(error)
           setBridgeLoader(false)
@@ -1072,14 +1038,14 @@ function BridgeComponent() {
 
           for (let i = 0; i < allTx.length; i++) {
             tempTable.push([
-
-              // allTx[i].createdAt,
+             
               allTx[i].createdAt,
 
               (allTx[i].walletToBridge.amount),
-             allTx[i]?.isNativeFee === true ? (allTx[i].walletToBridge.amount / 10 ** 8) : (parseFloat(allTx[i].walletToBridge.amount) - (allTx[i].platformFee + allTx[i].destinationFee)) / 10 ** 8,
-              allTx[i],
-              // allTx[i].platformFee || allTx[i].destinationFee ?  (allTx[i].platformFee +  allTx[i].destinationFee) / 10 ** 8 : 0,
+             
+              allTx[i]?.isNativeFee === true ? (allTx[i].walletToBridge.amount / 10 ** 8) : (parseFloat(allTx[i].walletToBridge.amount) - (allTx[i].platformFee + allTx[i].destinationFee)) / 10 ** 8,
+              
+              allTx[i],            
 
               allTx[i].walletToBridge.network,
 
@@ -1196,13 +1162,7 @@ function BridgeComponent() {
                     <div className="d-flex">
                       <div className="d-flex gap-2 align-items-center"><Image src={logoSmall} width="20" height={20} />LYO</div>
                     </div>
-                  </div>
-                  {/* <select value={selected ? selected.symbol : "LYO"} className="form-select" onChange={(e) => { handleChange(e); }}>
-                    {assetList?.map((item) => (
-                      <option key={item.index} value={item.symbol}><Image src={logoSmall} width="20" height={20} /> {item.symbol}</option>
-                    ))}
-                  </select> */}
-
+                  </div>             
                 </div>
 
                 <div className="row network-row">
