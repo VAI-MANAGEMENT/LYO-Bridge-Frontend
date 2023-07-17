@@ -2038,6 +2038,7 @@ footer .copyright {
   padding: 15px 0;
   display: flex;
     justify-content: space-between;
+    line-height: 17px;
 }
 .light-theme footer h5,.light-theme footer p{
  
