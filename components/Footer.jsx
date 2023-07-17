@@ -10,7 +10,7 @@ const Footer = () => {
       <div className="container">
         <div className="footer-row">
           <div className="logo-wrp">
-            <a href="#" className="logo"><Image src={Logo} /> </a>
+            <a href="#" className="logo"><Image src={Logo} width={175} height={31}/> </a>
             <br />
 
             <div>

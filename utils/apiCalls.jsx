@@ -1,5 +1,8 @@
 import axios from "axios";
 import appLink from "./urls";
+import appUtils from "./appUtils";
+
+
 
 const qs = require("qs");
 
@@ -92,7 +95,13 @@ const getGasPolygon = () => {
   return axios(config);
 }
 
-function saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, platformFee, destinationFee, isNativeFee) {
+
+const generateHashKey = async (requestBody) => { 
+  const hashKey = await appUtils.hash256(requestBody);   
+  return hashKey;
+}
+
+async function saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, amount, platformFee, destinationFee, isNativeFee) {
   let data = qs.stringify({
     transactionHash: transactionHash,
     chainID: chainID,
@@ -103,13 +112,22 @@ function saveTransaction(transactionHash, chainID, tokenAddress, bridgeAddress, 
     destinationFee : destinationFee,
     isNativeFee : isNativeFee
   });
+
+  let headerKey = await generateHashKey(data)  
   var config = {
     method: "POST",
     url: 'api/saveTransaction',
-    data: data
+    data: data,
+    headers: {
+      'x-api-key': headerKey
+  },
   };
 
-  return axios(config);
+  if(headerKey){
+    return axios(config);
+  }
+
+  
 }
 
 async function getGasFee(networkChainId) {
