@@ -11,6 +11,7 @@ export default async function handler(req, res) {
         const data = req.body
         const headerKey = req.headers['x-api-key']     
         const hashKey = await appUtils.hash256(qs.stringify(data))    
+        console.log("🚀 ~ file: saveTransaction.js:14 ~ handler ~ hashKey:", headerKey,hashKey)
        
         const config = {
             method: "POST",
