@@ -1,3 +1,5 @@
+import crypto from "crypto"
+
 const hash256 = async (string) => {
 
   try {   
