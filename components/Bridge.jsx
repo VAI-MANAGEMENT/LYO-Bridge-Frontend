@@ -1318,7 +1318,7 @@ function BridgeComponent() {
             <Modal.Title>Your Transactions</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {txData ? (
+            {txData && txData.length > 0 ? (
               <MUIDataTable
                 data={txData}
                 columns={columns}
@@ -1337,7 +1337,7 @@ function BridgeComponent() {
                 }
               />
             ) : (
-              "No transactions to show"
+              ""
             )}
           </Modal.Body>
           <Modal.Footer>
