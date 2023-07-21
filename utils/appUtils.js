@@ -1,6 +1,5 @@
-import crypto from "crypto"
-
 const hash256 = async (string) => {
+  const crypto = new Crypto();
 
   try {   
     const utf8 = new TextEncoder().encode(string);
