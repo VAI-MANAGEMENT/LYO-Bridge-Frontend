@@ -170,3 +170,30 @@ background:  transparent !important;
   .light-theme footer {
     color: #fff;
   }
+
+  .light-theme.historyModal .modal-content{
+    background: #fff !important;
+  }
+
+  .light-theme.historyModal .css-11mde6h-MuiPaper-root, .light-theme.historyModal .MuiTableCell-root, .light-theme.historyModal .MuiToolbar-root {
+    background: #fff!important;
+}
+.light-theme.historyModal svg{
+    color: #515151 !important;
+}
+
+.light-theme.historyModal .modal-header{
+    background: #324575;
+}
+
+.light-theme.historyModal .btn-close{
+    color: #fff;
+}
+
+.light-theme.historyModal tr td{
+    border-bottom: 1px solid rgba(224, 224, 224, 1) !important;
+}
+
+.light-theme.historyModal .btn{
+    color: #000 !important;
+}

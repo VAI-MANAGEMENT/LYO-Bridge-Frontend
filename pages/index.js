@@ -25,7 +25,7 @@ export default function Home() {
       <div className={`${theme}`}>
         <Header/>
         <div className="mainContainer">
-          <BridgeComponent />
+          <BridgeComponent currentTheme = {theme}/>
           {/* <Coming/> */}
         </div>
         <Footer/>

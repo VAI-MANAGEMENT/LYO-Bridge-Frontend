@@ -29,7 +29,7 @@ import { CgCopy } from "react-icons/cg";
 import { BsArrowUpRightSquare, BsInfoCircle } from "react-icons/bs";
 import TokenInfo from "./TokenInfo";
 
-function BridgeComponent() {
+function BridgeComponent(currentTheme) {
   const [key, setKey] = useState("bridge");
   const [tokenContract, setTokenContract] = useState();
   const [tokenSymbol, setTokenSymbol] = useState("LYO");
@@ -58,7 +58,7 @@ function BridgeComponent() {
   const [totalBridgeFee, setTotalBridgeFee] = useState();
   const [receiveAmount, setReceiveAmount] = useState();
   const [feeLoader, setFeeLoader] = useState(false);
-
+  const [currentActiveTheme, setCurrentActiveTheme] = useState("light-theme");
 
   const alert = useAlert();
   const { walletAddress, chainId, switchNetwork } = useContext(WalletContext);
@@ -77,9 +77,15 @@ function BridgeComponent() {
     if (assetList) {
       getTokenContract();
       getSideBridgeContract();
-      changeSymbol()
+      changeSymbol();     
     }
   }, [walletAddress, chainId, selected, assetList, networkFrom]);
+
+  useEffect(() => {
+    if (currentTheme) {
+      setCurrentActiveTheme(currentTheme?.currentTheme);
+    }
+  }, [currentTheme]);
 
   useEffect(() => {
     if (assetList) {
@@ -1313,7 +1319,7 @@ function BridgeComponent() {
       />
 
       <>
-        <Modal show={show} onHide={handleClose} className="historyModal">
+        <Modal show={show} onHide={handleClose} className={'historyModal ' + currentActiveTheme}>
           <Modal.Header closeButton>
             <Modal.Title>Your Transactions</Modal.Title>
           </Modal.Header>
