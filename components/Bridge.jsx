@@ -1160,7 +1160,7 @@ function BridgeComponent() {
                   <label>Asset</label>
                   <div className="dropdown-wrp input-wrp mb-3">
                     <div className="d-flex">
-                      <div className="d-flex gap-2 align-items-center"><Image src={logoSmall} width="20" height={20} />LYO</div>
+                      <div className="d-flex gap-2 align-items-center"><Image src={logoSmall} width="15" height="20" />LYO</div>
                     </div>
                   </div>             
                 </div>
