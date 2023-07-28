@@ -2415,6 +2415,9 @@ hr {
   text-transform: capitalize;
 }
 
+.tss-1cdcmys-MUIDataTable-responsiveBase{
+  max-height: 564px;
+}
 @media only screen and (max-width:1440px) {
   .frame-container {
     width: 33%;

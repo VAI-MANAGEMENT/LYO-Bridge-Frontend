@@ -232,11 +232,11 @@ const InputComponent = ({
           placeholder={0}
           min="0"
           autoComplete="off"
-          step="any"
+          // step="any"
           onChange={(e) => {
             setInputAmount(e.target.value);
           }}
-          onBlur={(e) => setInputAmount(Number(e.target.value).toString())}
+          // onBlur={(e) => setInputAmount(Number(e.target.value).toString())}
           value={disabled ? "" : /[0-9]+[.*]/g.test(inputValue) ? inputValue : Number(inputValue).toString()}
           disabled={disabled}
         />

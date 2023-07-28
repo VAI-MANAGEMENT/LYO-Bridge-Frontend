@@ -183,11 +183,15 @@ background:  transparent !important;
 }
 
 .light-theme.historyModal .modal-header{
-    background: #324575;
+    background: #262626;
 }
 
 .light-theme.historyModal .btn-close{
     color: #fff;
+}
+
+.light-theme.historyModal .btn-close{
+    background-color: #fff;
 }
 
 .light-theme.historyModal tr td{

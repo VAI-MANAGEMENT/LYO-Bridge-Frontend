@@ -77,7 +77,7 @@ function BridgeComponent(currentTheme) {
     if (assetList) {
       getTokenContract();
       getSideBridgeContract();
-      changeSymbol();     
+      changeSymbol();
     }
   }, [walletAddress, chainId, selected, assetList, networkFrom]);
 
@@ -258,11 +258,11 @@ function BridgeComponent(currentTheme) {
             let destinationFeeFormatted = parseFloat((response.data.data.destinationFee).toString().match(/^-?\d+(?:\.\d{0,8})?/)[0]);
             setDestinationFee(parseFloat(destinationFeeFormatted))
 
-            let platformFeeFormatted = parseFloat((parseFloat(amount) * (response.data.data.platformFee / 100)).toString().match(/^-?\d+(?:\.\d{0,8})?/)[0]);          
+            let platformFeeFormatted = parseFloat((parseFloat(amount) * (response.data.data.platformFee / 100)).toString().match(/^-?\d+(?:\.\d{0,8})?/)[0]);
             setPlatformFee(platformFeeFormatted)
 
             let totalFee = (platformFeeFormatted + destinationFeeFormatted).toString().match(/^-?\d+(?:\.\d{0,8})?/)[0]
-         
+
             setTotalBridgeFee(totalFee)
 
             let receiveAmount = parseFloat((parseFloat(amount) - (parseFloat(totalFee))));
@@ -380,7 +380,7 @@ function BridgeComponent(currentTheme) {
         sort: true,
         searchable: true,
         customBodyRender: (value) => {
-          return (value / 10 ** 8).toString().match(/^-?\d+(?:\.\d{0,4})?/)[0]
+          return (value / 10 ** 8)
         },
       },
     },
@@ -403,8 +403,8 @@ function BridgeComponent(currentTheme) {
         customBodyRender: (item) => {
           return item.platformFee && item?.isNativeFee === true ? (
             <Tooltip content={item.platformFee} color="invert">
-            <span>{((item.platformFee).toString()).slice(0, 8)}... {getNetworkSymbol(item.walletToBridge.fromChainID)}</span>
-        </Tooltip>
+              <span>{((item.platformFee).toString()).slice(0, 8)}... {getNetworkSymbol(item.walletToBridge.fromChainID)}</span>
+            </Tooltip>
           ) : (
             <>
               {item.destinationFee && item.platformFee ?
@@ -551,11 +551,11 @@ function BridgeComponent(currentTheme) {
         <>
           <div className="d-flex gap-5">
             Destination Fee : {(destinationFee).toString().match(/^-?\d+(?:\.\d{0,8})?/)[0]} LYO
-          
+
           </div>
           <div className="d-flex gap-5">
             Platform Fee : {(platformFee).toString().match(/^-?\d+(?:\.\d{0,8})?/)[0]} LYO
-         
+
           </div>
         </>
 
@@ -630,7 +630,7 @@ function BridgeComponent(currentTheme) {
         </button>
       );
     }
-    if ( !process.env.BRIDGE_FEE_CONFIG && (destinationFee + platformFee) >= amount) {
+    if (!process.env.BRIDGE_FEE_CONFIG && (destinationFee + platformFee) >= amount) {
       return (
         <button className="btn btn-primary mb-2" disabled>
           Bridging amount should be more than Bridge fee
@@ -641,6 +641,13 @@ function BridgeComponent(currentTheme) {
       return (
         <button className="btn btn-primary mb-2" disabled>
           Bridge Fee Calculating
+        </button>
+      );
+    }
+    if (count((amount).toLocaleString('fullwide', {useGrouping:false}) ) > 8) {
+      return (
+        <button className="btn btn-primary mb-2" disabled>
+          Please enter amount with equal or less than 8 decimal points
         </button>
       );
     }
@@ -660,6 +667,18 @@ function BridgeComponent(currentTheme) {
     }
   }
 
+  function count(numb) {   
+    try {
+      if (Number.isInteger(numb)) {
+        return 0;
+      } else {
+        return numb.toString().split('.')[1].length;
+      }
+    } catch (error) {
+      return 0;
+    }
+    
+  }
   function getNetworks() {
     let result = ApiCalls.getNetworks();
     result
@@ -827,7 +846,7 @@ function BridgeComponent(currentTheme) {
             if (result) {
               let approveTxHash = result.transactionHash;
               const contract = new web3eth.eth.Contract(bridgeABI, bridgeAddress);
-           
+
               let lock = await contract.methods
                 .lockTokens(
                   networkTo.chainID,
@@ -854,7 +873,7 @@ function BridgeComponent(currentTheme) {
                 "0x4d3698a1b5ba37c884f644e03733e28d1ee398cca155ca2c434e5b11eb4165eb"
               )
               // .send({ from: walletAddress, value: 0 }).on('transactionHash', function (hash) {
-              .send({ from: walletAddress, value: process.env.BRIDGE_FEE_CONFIG ? web3eth.utils.toWei(platformFee) : 0, gas: gas, gas: gas }).on('transactionHash', function (hash) {
+              .send({ from: walletAddress, value: process.env.BRIDGE_FEE_CONFIG ? web3eth.utils.toWei(platformFee) : 0, gas: gas }).on('transactionHash', function (hash) {
                 if (hash) {
                   saveTransaction(hash, networkFrom.chainID, tokenAddress, bridgeAddress, amountFormatted.toString(), platformFee, destinationFee)
                 }
@@ -888,7 +907,7 @@ function BridgeComponent(currentTheme) {
               )
               .send({ from: walletAddress });
 
-            if (result) {           
+            if (result) {
               let approveTxHash = result.transactionHash;
               let gas = await ApiCalls.getGasFee(networkFrom.chainID);
               gas = (gas * 21000) + gas;
@@ -928,7 +947,7 @@ function BridgeComponent(currentTheme) {
                 }
               })
             getTokenDetails(tokenContract);
-          }      
+          }
         } catch (error) {
           console.log(error)
           setBridgeLoader(false)
@@ -1044,14 +1063,14 @@ function BridgeComponent(currentTheme) {
 
           for (let i = 0; i < allTx.length; i++) {
             tempTable.push([
-             
+
               allTx[i].createdAt,
 
               (allTx[i].walletToBridge.amount),
-             
+
               allTx[i]?.isNativeFee === true ? (allTx[i].walletToBridge.amount / 10 ** 8) : (parseFloat(allTx[i].walletToBridge.amount) - (allTx[i].platformFee + allTx[i].destinationFee)) / 10 ** 8,
-              
-              allTx[i],            
+
+              allTx[i],
 
               allTx[i].walletToBridge.network,
 
@@ -1168,7 +1187,7 @@ function BridgeComponent(currentTheme) {
                     <div className="d-flex">
                       <div className="d-flex gap-2 align-items-center"><Image src={logoSmall} width="15" height="20" />LYO</div>
                     </div>
-                  </div>             
+                  </div>
                 </div>
 
                 <div className="row network-row">
@@ -1223,24 +1242,24 @@ function BridgeComponent(currentTheme) {
 
 
                 <div id="example-collapse-text" className="mb-4 mt-5 d-flex align-items-end flex-column">
-                  {amount && assetList && receiveAmount  ?
+                  {amount && assetList && receiveAmount ?
                     <div className="info-wrp text-right">
                       {process.env.BRIDGE_FEE_CONFIG === 'native' && amount >= (destinationFee + platformFee) ?
-                       <>
-                       <span>You will receive - </span>
-                       {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
-                         <span>  {(receiveAmount)} LYO</span>
-                       }
-                       </>
-                       : 
-                       <>
-                       <span>You will receive - </span>
-                       {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
-                         <span>  {(receiveAmount)} LYO</span>
-                       }
-                       </>
+                        <>
+                          <span>You will receive - </span>
+                          {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
+                            <span>  {(receiveAmount)} LYO</span>
+                          }
+                        </>
+                        :
+                        <>
+                          <span>You will receive - </span>
+                          {feeLoader == true ? <span>Calculating <span className="loader"></span></span> :
+                            <span>  {(receiveAmount)} LYO</span>
+                          }
+                        </>
                       }
-                     
+
                     </div>
                     : ""}
 
