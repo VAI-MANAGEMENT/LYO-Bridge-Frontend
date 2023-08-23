@@ -68,7 +68,7 @@ function Header({ currencyBalance }) {
             className="navbar-brand"
             href="#"          
           >
-            <Image src={Logo}   alt="LYOBRIDGE" className="logo" width={175} height={31}/> 
+            <Image src={Logo}   alt="LYOBRIDGE" className="logo" width={252} height={45}/> 
           </a>
 
           <div>
